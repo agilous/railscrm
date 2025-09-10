@@ -27,6 +27,9 @@ require 'capybara/rspec'
 #
 Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
 
+# Force eager loading of routes for Devise compatibility with Rails 8
+Rails.application.routes.default_url_options[:host] = 'test.example.com'
+
 # Ensures that the test database schema matches the current schema file.
 # If there are pending migrations it will invoke `db:test:prepare` to
 # recreate the test database by loading the schema.
@@ -44,6 +47,14 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include Devise::Test::ControllerHelpers, type: :controller
   config.include Devise::Test::IntegrationHelpers, type: :system
+
+  # Include route helpers for all test types
+  config.include Rails.application.routes.url_helpers
+
+  # Configure host for URL helpers in tests
+  config.before(:each, type: :request) do
+    host! 'www.example.com'
+  end
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
