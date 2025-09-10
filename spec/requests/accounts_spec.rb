@@ -8,8 +8,41 @@ RSpec.describe 'Accounts', type: :request do
     sign_in user
   end
 
-  # Skip GET tests since views don't exist yet in Rails 8 upgrade
-  # These would be better tested in system specs anyway
+  describe 'GET /accounts' do
+    it 'returns a successful response' do
+      get accounts_path
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'renders the accounts index template' do
+      get accounts_path
+      expect(response).to render_template("accounts/index")
+    end
+  end
+
+  describe 'GET /accounts/:id' do
+    it 'returns a successful response' do
+      get account_path(account)
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'renders the show account template' do
+      get account_path(account)
+      expect(response).to render_template("accounts/show")
+    end
+  end
+
+  describe 'GET /accounts/new' do
+    it 'returns a successful response' do
+      get new_account_path
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'renders the new account template' do
+      get new_account_path
+      expect(response).to render_template("accounts/new")
+    end
+  end
 
   describe 'POST /accounts' do
     context 'with valid parameters' do

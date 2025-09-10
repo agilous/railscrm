@@ -1,0 +1,84 @@
+<div class="max-w-4xl mx-auto py-8">
+  <div class="bg-white shadow-lg rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-900"><%= @task.title %></h1>
+      <div class="flex space-x-3">
+        <%= link_to 'Edit', edit_task_path(@task), class: 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200' %>
+        <%= link_to 'Back to Tasks', tasks_path, class: 'bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200' %>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Task Details</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Status</label>
+            <% if @task.completed? %>
+              <span class="inline-flex px-2 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
+                Completed
+              </span>
+            <% else %>
+              <span class="inline-flex px-2 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                Pending
+              </span>
+            <% end %>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Priority</label>
+            <% priority_colors = {
+              'high' => 'bg-red-100 text-red-800',
+              'medium' => 'bg-yellow-100 text-yellow-800',
+              'low' => 'bg-green-100 text-green-800'
+            } %>
+            <span class="inline-flex px-2 py-1 text-sm font-semibold rounded-full <%= priority_colors[@task.priority&.downcase] || 'bg-gray-100 text-gray-800' %>">
+              <%= @task.priority&.humanize || 'Not set' %>
+            </span>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Assignee</label>
+            <p class="text-gray-900">
+              <%= @task.assignee&.full_name || @task.assignee&.email || 'Not assigned' %>
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Due Date</label>
+            <p class="text-gray-900">
+              <% if @task.due_date %>
+                <%= @task.due_date.strftime('%B %d, %Y') %>
+                <% if @task.due_date < Date.current && !@task.completed? %>
+                  <span class="ml-2 text-red-600 font-medium">Overdue</span>
+                <% end %>
+              <% else %>
+                Not set
+              <% end %>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Timeline</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Created</label>
+            <p class="text-gray-900"><%= @task.created_at.strftime('%B %d, %Y at %I:%M %p') %></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Last Updated</label>
+            <p class="text-gray-900"><%= @task.updated_at.strftime('%B %d, %Y at %I:%M %p') %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% if @task.description.present? %>
+      <div class="mt-6">
+        <h3 class="text-lg font-semibold text-gray-700 mb-3">Description</h3>
+        <div class="bg-gray-50 p-4 rounded-md">
+          <p class="text-gray-700"><%= simple_format(@task.description) %></p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

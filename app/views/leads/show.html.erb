@@ -1,0 +1,174 @@
+<div class="max-w-6xl mx-auto">
+  <div class="md:flex md:items-center md:justify-between">
+    <div class="flex-1 min-w-0">
+      <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+        <%= @lead.full_name %>
+      </h2>
+      <p class="mt-1 text-sm text-gray-500">
+        Lead created on <%= @lead.created_at.strftime("%B %d, %Y") %>
+      </p>
+    </div>
+    <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
+      <%= link_to 'Convert Lead', convert_lead_path(@lead), 
+          class: 'inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500' %>
+      <%= link_to 'Edit', edit_lead_path(@lead), 
+          class: 'inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500' %>
+    </div>
+  </div>
+
+  <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <!-- Lead Details -->
+    <div class="lg:col-span-2">
+      <div class="bg-white shadow-sm rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Lead Details</h3>
+          
+          <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Full Name</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @lead.full_name %></dd>
+            </div>
+
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Company</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @lead.company %></dd>
+            </div>
+
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Email</dt>
+              <dd class="mt-1 text-sm text-gray-900">
+                <%= link_to @lead.email, "mailto:#{@lead.email}", class: "text-blue-600 hover:text-blue-900" %>
+              </dd>
+            </div>
+
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Phone</dt>
+              <dd class="mt-1 text-sm text-gray-900">
+                <%= link_to @lead.phone, "tel:#{@lead.phone}", class: "text-blue-600 hover:text-blue-900" %>
+              </dd>
+            </div>
+
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Status</dt>
+              <dd class="mt-1">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                  <%= case @lead.lead_status&.downcase
+                      when 'new' then 'bg-yellow-100 text-yellow-800'
+                      when 'contacted' then 'bg-blue-100 text-blue-800'
+                      when 'qualified' then 'bg-green-100 text-green-800'
+                      when 'disqualified' then 'bg-red-100 text-red-800'
+                      else 'bg-gray-100 text-gray-800'
+                      end %>">
+                  <%= @lead.lead_status&.capitalize %>
+                </span>
+              </dd>
+            </div>
+
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Source</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @lead.lead_source&.capitalize %></dd>
+            </div>
+
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Assigned To</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @lead.lead_owner %></dd>
+            </div>
+
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Interested In</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @lead.interested_in %></dd>
+            </div>
+
+            <div class="sm:col-span-2">
+              <dt class="text-sm font-medium text-gray-500">Address</dt>
+              <dd class="mt-1 text-sm text-gray-900">
+                <% if @lead.address.present? %>
+                  <%= @lead.address %><br>
+                  <%= @lead.city %>, <%= @lead.state %> <%= @lead.zip %>
+                <% else %>
+                  <span class="text-gray-400">No address provided</span>
+                <% end %>
+              </dd>
+            </div>
+
+            <div class="sm:col-span-2">
+              <dt class="text-sm font-medium text-gray-500">Comments</dt>
+              <dd class="mt-1 text-sm text-gray-900">
+                <%= @lead.comments.present? ? simple_format(@lead.comments) : content_tag(:span, "No comments", class: "text-gray-400") %>
+              </dd>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes Section -->
+    <div>
+      <div class="bg-white shadow-sm rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Activity & Notes</h3>
+            <button onclick="toggleNewNote()" 
+                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              New Note
+            </button>
+          </div>
+
+          <!-- New Note Form -->
+          <div id="new-note-form" class="hidden mb-6">
+            <%= form_with model: [@lead, Note.new], local: true, class: "space-y-4" do |n| %>
+              <div>
+                <%= n.label :content, "Note", class: "block text-sm font-medium text-gray-700" %>
+                <%= n.text_area :content, rows: 4, 
+                    class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+                    placeholder: "Add a note about this lead..." %>
+              </div>
+              <div class="flex justify-end space-x-2">
+                <button type="button" onclick="toggleNewNote()" 
+                        class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                  Cancel
+                </button>
+                <%= n.submit "Add Note", 
+                    class: "inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700" %>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Notes List -->
+          <div class="space-y-4">
+            <% if @lead.notes.present? %>
+              <% @lead.notes.order(created_at: :desc).each do |note| %>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <div class="text-sm text-gray-600 mb-2">
+                    <%= note.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+                  </div>
+                  <div class="text-sm text-gray-900">
+                    <%= simple_format(note.content) %>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="text-center py-6">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10m0 0V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2m0 0v8a2 2 0 002 2h6a2 2 0 002-2V8M7 8v8a2 2 0 002 2h6a2 2 0 002-2V8m0 0H7m5 3v6m0-6l-2 2m2-2l2 2" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No notes yet</h3>
+                <p class="mt-1 text-sm text-gray-500">Get started by adding a note about this lead.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleNewNote() {
+    const form = document.getElementById('new-note-form');
+    form.classList.toggle('hidden');
+    if (!form.classList.contains('hidden')) {
+      form.querySelector('textarea').focus();
+    }
+  }
+</script>

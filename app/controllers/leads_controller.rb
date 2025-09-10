@@ -29,7 +29,12 @@ class LeadsController < ApplicationController
       # LeadMailer.notify_new_lead(@lead.lead_owner, @lead).deliver if defined?(LeadMailer)
       redirect_to lead_path(@lead), notice: "New Lead Created"
     else
-      render json: { errors: @lead.errors }, status: :unprocessable_entity
+      # Reload form data for re-render
+      @lead_owner = User.all.map(&:email)
+      @lead_status = Lead.status if Lead.respond_to?(:status)
+      @lead_sources = Lead.sources if Lead.respond_to?(:sources)
+      @lead_interests = Lead.interests if Lead.respond_to?(:interests)
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -48,7 +53,12 @@ class LeadsController < ApplicationController
         # LeadMailer.notify_updated_lead(@lead.lead_owner, @lead).deliver if defined?(LeadMailer)
         redirect_to lead_path(@lead), notice: "Lead Updated"
       else
-        render json: { errors: @lead.errors }, status: :unprocessable_entity
+        # Reload form data for re-render
+        @lead_owner = User.all.map(&:email)
+        @lead_status = Lead.status if Lead.respond_to?(:status)
+        @lead_sources = Lead.sources if Lead.respond_to?(:sources)
+        @lead_interests = Lead.interests if Lead.respond_to?(:interests)
+        render :edit, status: :unprocessable_entity
       end
     end
   end
@@ -73,7 +83,7 @@ class LeadsController < ApplicationController
     if @lead.save
       redirect_to root_path, notice: "Thank you for your interest!"
     else
-      render json: { errors: @lead.errors }, status: :unprocessable_entity
+      render :external_form, status: :unprocessable_entity
     end
   end
 
@@ -89,9 +99,17 @@ class LeadsController < ApplicationController
                                  :lead_status, :lead_source, :interested_in)
   end
 
+  def convert
+    # Show conversion form
+    @lead_owner = User.all.map(&:email)
+    @lead_status = Lead.status if Lead.respond_to?(:status)
+    @lead_sources = Lead.sources if Lead.respond_to?(:sources)
+    @lead_interests = Lead.interests if Lead.respond_to?(:interests)
+  end
+
   def convert_lead
     # Simplified conversion logic for now
-    @lead.update(lead_params)
+    @lead.update(lead_params) if params[:lead].present?
     flash[:notice] = "Lead conversion feature needs to be implemented"
     redirect_to @lead
   end

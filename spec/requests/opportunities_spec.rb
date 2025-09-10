@@ -8,6 +8,26 @@ RSpec.describe 'Opportunities', type: :request do
     sign_in user
   end
 
+  describe 'GET /opportunities' do
+    it 'returns a successful response' do
+      get opportunities_path
+      expect(response).to have_http_status(:success)
+    end
+  end
+
+  describe 'GET /opportunities/:id' do
+    it 'returns a successful response' do
+      get opportunity_path(opportunity)
+      expect(response).to have_http_status(:success)
+    end
+  end
+
+  describe 'GET /opportunities/new' do
+    it 'returns a successful response' do
+      get new_opportunity_path
+      expect(response).to have_http_status(:success)
+    end
+  end
 
   describe 'POST /opportunities' do
     context 'with valid parameters' do

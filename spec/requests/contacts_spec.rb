@@ -8,8 +8,41 @@ RSpec.describe 'Contacts', type: :request do
     sign_in user
   end
 
-  # Skip GET tests since views don't exist yet in Rails 8 upgrade
-  # These would be better tested in system specs anyway
+  describe 'GET /contacts' do
+    it 'returns a successful response' do
+      get contacts_path
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'renders the contacts index template' do
+      get contacts_path
+      expect(response).to render_template("contacts/index")
+    end
+  end
+
+  describe 'GET /contacts/:id' do
+    it 'returns a successful response' do
+      get contact_path(contact)
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'renders the show contact template' do
+      get contact_path(contact)
+      expect(response).to render_template("contacts/show")
+    end
+  end
+
+  describe 'GET /contacts/new' do
+    it 'returns a successful response' do
+      get new_contact_path
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'renders the new contact template' do
+      get new_contact_path
+      expect(response).to render_template("contacts/new")
+    end
+  end
 
   describe 'POST /contacts' do
     context 'with valid parameters' do

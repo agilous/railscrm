@@ -8,6 +8,26 @@ RSpec.describe 'Tasks', type: :request do
     sign_in user
   end
 
+  describe 'GET /tasks' do
+    it 'returns a successful response' do
+      get tasks_path
+      expect(response).to have_http_status(:success)
+    end
+  end
+
+  describe 'GET /tasks/:id' do
+    it 'returns a successful response' do
+      get task_path(task)
+      expect(response).to have_http_status(:success)
+    end
+  end
+
+  describe 'GET /tasks/new' do
+    it 'returns a successful response' do
+      get new_task_path
+      expect(response).to have_http_status(:success)
+    end
+  end
 
   describe 'POST /tasks' do
     context 'with valid parameters' do

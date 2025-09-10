@@ -16,9 +16,7 @@ gem "bcrypt", "~> 3.1.7"
 gem "devise"
 
 # UI and Forms
-gem "bootstrap", "~> 5.3"
-gem "sassc-rails"
-gem "jquery-rails"
+gem "tailwindcss-rails"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
@@ -54,4 +52,6 @@ group :test do
   # Modern browser testing - faster and more reliable than Selenium
   gem "playwright-ruby-client"
   gem "capybara-playwright-driver"
+  # Controller testing helpers
+  gem "rails-controller-testing"
 end

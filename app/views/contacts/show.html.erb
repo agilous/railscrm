@@ -1,0 +1,62 @@
+<div class="max-w-4xl mx-auto">
+  <div class="md:flex md:items-center md:justify-between">
+    <div class="flex-1 min-w-0">
+      <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+        <%= @contact.full_name %>
+      </h2>
+      <p class="mt-1 text-sm text-gray-500">
+        Contact details
+      </p>
+    </div>
+    <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
+      <%= link_to 'Edit', edit_contact_path(@contact), 
+          class: 'inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500' %>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <div class="bg-white shadow-sm rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Contact Information</h3>
+        
+        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Full Name</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @contact.full_name %></dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Company</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @contact.company %></dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Email</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= link_to @contact.email, "mailto:#{@contact.email}", class: "text-blue-600 hover:text-blue-900" %>
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Phone</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= link_to @contact.phone, "tel:#{@contact.phone}", class: "text-blue-600 hover:text-blue-900" %>
+            </dd>
+          </div>
+
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-medium text-gray-500">Address</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <% if @contact.address.present? %>
+                <%= @contact.address %><br>
+                <%= [@contact.city, @contact.state, @contact.zip].compact.join(', ') %>
+              <% else %>
+                <span class="text-gray-400">No address provided</span>
+              <% end %>
+            </dd>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
