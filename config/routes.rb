@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   # Web-to-Lead functionality
   match "web_to_lead" => "leads#new_web_lead", as: "web_to_lead", via: :get
   match "create_lead" => "leads#create_web_lead", as: "create_lead", via: :post
-  match "generate" => "leads#external_form", via: :get
+  match "generate" => "leads#external_form", via: [ :get, :post ]
 
   # Resource routes
   resources :leads do

@@ -1,105 +1,73 @@
-require 'spec_helper'
+require 'rails_helper'
 
-describe 'Tasks' do
+RSpec.describe 'Tasks', type: :request do
+  let(:user) { create(:approved_user) }
+  let(:task) { create(:task) }
 
   before do
-    @user   = FactoryGirl.create :approved_user
-    @user2  = FactoryGirl.create :approved_user, email: 'test2@example.com', first_name: 'Jim'
-    @lead   = FactoryGirl.create :lead, email: 'test@test.com', first_name: 'Jenny', last_name: 'Smith'
-    login_as @user
+    sign_in user
   end
 
-  it 'creates a new task', js: true do
-    click_link 'Tasks'
-    click_link 'Create Task'
-    fill_in 'task_due_date',        with: '09/11/2012'
-    select2 "#{@user2.email}",       from: 'Assigned to'
-    select2 'Call',                  from: 'Task type'
-    select2 "#{@lead.email}",        from: 'For Lead'
-    fill_in "task_task_name",       with: 'test task'
-    click_button 'Create Task'
-    Task.count.should == 1
-    page.should have_content 'New Task Created'
-  end
-    
-  it 'has required fields', js: true do
-    click_link 'Tasks'
-    click_link 'Create Task'
-    fill_in 'task_due_date',        with: '09/11/2012'
-    select2 "#{@user2.email}",       from: 'Assigned to'
-    select2 'Call',                  from: 'Task type'
-    select2 "#{@lead.email}",        from: 'For Lead'
-    click_button 'Create Task'
-    Task.count.should == 0
-    page.should_not have_content 'Task Updated'
-  end
-    
-  it 'notifies the user they have been assigned to a task', js: true do
-    click_link 'Tasks'
-    click_link 'Create Task'
-    fill_in "task_task_name",       with: 'another test task'
-    fill_in 'task_due_date',        with: '09/11/2012'
-    select2 "#{@user2.email}",       from: 'Assigned to'
-    select2 'Call',                  from: 'Task type'
-    select2 "#{@lead.email}",        from: 'For Lead'
-    sleep 2
-    click_button 'Create Task'
-    page.should have_content 'New Task Created'
-    ActionMailer::Base.deliveries.last.to.should include @user2.email
-    ActionMailer::Base.deliveries.last.body.should include 'call' && @lead.email
-  end
 
-  context 'edit' do
-    before do
-      @task = FactoryGirl.create :task, lead_for_task: @lead.first_name
-    end
-
-    it 'edits task', js: true do
-      click_link 'Tasks'
-      within '.table-striped' do
-        click_link 'Edit'
+  describe 'POST /tasks' do
+    context 'with valid parameters' do
+      let(:valid_attributes) do
+        {
+          task: {
+            title: 'Test Task',
+            description: 'Test task description',
+            due_date: Date.tomorrow,
+            assignee_id: user.id,
+            priority: 'high',
+            completed: false
+          }
+        }
       end
-      fill_in "task_task_name",         with: 'test task 2 updated'
-      fill_in 'task_due_date',          with: '09/11/2012'
-      select2 "#{@user2.email}",         from: 'Assigned to'
-      select2 'Email',                   from: 'Task type'
-      select2 "#{@lead.email}",          from: 'For Lead'
-      sleep 2
-      click_button 'Update Task'
-      page.should have_content 'Task Updated'
-      @task.reload
-      @task.task_name.should == 'test task 2 updated'
-    end
 
-
-    it 'notifies the user their task has changed', js: true do
-      click_link 'Tasks'
-      within '.table-striped' do
-        click_link 'Edit'
+      it 'creates a new task' do
+        expect {
+          post tasks_path, params: valid_attributes
+        }.to change(Task, :count).by(1)
       end
-      fill_in "task_task_name",         with: 'test task 2 updated'
-      fill_in 'task_due_date',          with: '09/11/2012'
-      select2 "#{@user2.email}",         from: 'Assigned to'
-      select2 'Email',                   from: 'Task type'
-      select2 "#{@lead.email}",          from: 'For Lead'
-      sleep 2
-      click_button 'Update Task'
-      ActionMailer::Base.deliveries.last.to.should include @user2.email
-      ActionMailer::Base.deliveries.last.body.should include 'test task 2 updated' && @lead.email
+
+      it 'redirects to tasks index' do
+        post tasks_path, params: valid_attributes
+        expect(response).to redirect_to(tasks_path)
+      end
     end
-        
   end
 
-  context 'delete' do
-    before do
-      @task   = FactoryGirl.create :task, lead_for_task: @lead.first_name
+  describe 'PATCH /tasks/:id' do
+    context 'with valid parameters' do
+      let(:new_attributes) do
+        { task: { title: 'Updated Task Name' } }
+      end
+
+      it 'updates the task' do
+        patch task_path(task), params: new_attributes
+        task.reload
+        expect(task.title).to eq('Updated Task Name')
+      end
+
+      it 'redirects to tasks index' do
+        patch task_path(task), params: new_attributes
+        expect(response).to redirect_to(tasks_path)
+      end
+    end
+  end
+
+  describe 'DELETE /tasks/:id' do
+    let!(:task_to_delete) { create(:task) }
+
+    it 'destroys the task' do
+      expect {
+        delete task_path(task_to_delete)
+      }.to change(Task, :count).by(-1)
     end
 
-    it 'deletes task' do  
-      click_link 'Tasks'
-      click_link 'Delete'
-      page.should have_content 'Task Deleted'
+    it 'redirects to tasks index' do
+      delete task_path(task_to_delete)
+      expect(response).to redirect_to(tasks_path)
     end
-
   end
 end

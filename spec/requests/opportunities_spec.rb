@@ -1,55 +1,74 @@
-require 'spec_helper'
+require 'rails_helper'
 
-describe "Opportunities" do
+RSpec.describe 'Opportunities', type: :request do
+  let(:user) { create(:approved_user) }
+  let(:opportunity) { create(:opportunity) }
 
   before do
-    @user     = FactoryGirl.create :approved_user
-    @account  = FactoryGirl.create :account
-    login_as @user
-  end
-  
-  it 'creates an opportunity', js: true do
-    click_link 'Opportunities'
-    click_link 'Create New Opportunity'
-
-    fill_in 'opportunity_opportunity_name', 		  with: 'Next Big Deal'
-    select2 'Big Money', 					                from: 'Account name'
-    select2 'New Customer', 					            from: 'Type'
-    fill_in 'opportunity_amount', 	              with: '10,000'
-    select2 'Proposal', 							            from: 'Stage'
-    select2 "#{@user.email}",				              from: 'Owner'
-    fill_in 'opportunity_closing_date',           with: '09/11/2012'
-    fill_in 'opportunity_probability', 	          with: '50%'
-    fill_in 'opportunity_contact_name',	          with: 'Mister Smith'
-    fill_in 'opportunity_comments', 		          with: 'Lets nail this one'
-    sleep 2
-    click_button 'Create Opportunity'
-    page.should have_content 'New Opportunity Created'
+    sign_in user
   end
 
-  context 'with created opportunity' do
 
-    before do
-      @opportunity = FactoryGirl.create :opportunity, owner: @user.email, account_name: @account.name
-    end
-
-    it 'edits opportunity' do
-      click_link 'Opportunities'
-      within '.table-striped' do
-        click_link 'Edit'
+  describe 'POST /opportunities' do
+    context 'with valid parameters' do
+      let(:valid_attributes) do
+        {
+          opportunity: {
+            opportunity_name: 'Test Opportunity',
+            account_name: 'Test Account',
+            owner: user.email,
+            amount: 10000,
+            closing_date: Date.tomorrow,
+            stage: 'prospecting',
+            type: 'new_customer'
+          }
+        }
       end
 
-      fill_in 'opportunity_opportunity_name',   with: 'New Deal Name'
-      fill_in 'opportunity_amount',             with: '20,000'
-      click_button 'Update'
-      page.should have_content 'Opportunity Successfully Updated'
-    end
+      it 'creates a new opportunity' do
+        expect {
+          post opportunities_path, params: valid_attributes
+        }.to change(Opportunity, :count).by(1)
+      end
 
-    it 'deletes an opportunity' do
-      click_link 'Opportunities'
-      click_link 'Delete'
-      page.should have_content 'Opportunity Deleted'
+      it 'redirects to the opportunity' do
+        post opportunities_path, params: valid_attributes
+        expect(response).to have_http_status(:found)
+      end
     end
   end
 
+  describe 'PATCH /opportunities/:id' do
+    context 'with valid parameters' do
+      let(:new_attributes) do
+        { opportunity: { opportunity_name: 'Updated Opportunity Name' } }
+      end
+
+      it 'updates the opportunity' do
+        patch opportunity_path(opportunity), params: new_attributes
+        opportunity.reload
+        expect(opportunity.opportunity_name).to eq('Updated Opportunity Name')
+      end
+
+      it 'redirects to the opportunity' do
+        patch opportunity_path(opportunity), params: new_attributes
+        expect(response).to redirect_to(opportunity_path(opportunity))
+      end
+    end
+  end
+
+  describe 'DELETE /opportunities/:id' do
+    let!(:opportunity_to_delete) { create(:opportunity) }
+
+    it 'destroys the opportunity' do
+      expect {
+        delete opportunity_path(opportunity_to_delete)
+      }.to change(Opportunity, :count).by(-1)
+    end
+
+    it 'redirects back' do
+      delete opportunity_path(opportunity_to_delete)
+      expect(response).to have_http_status(:found)
+    end
+  end
 end

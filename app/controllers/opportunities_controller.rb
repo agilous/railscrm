@@ -1,56 +1,56 @@
 class OpportunitiesController < ApplicationController
-  before_filter :authenticate_user!
-  
-	def new
-		@opportunity 						= Opportunity.new
-		@opportunity_owner  	  = User.all.map(&:email)
-    @opportunity_type		   	= Opportunity.types
-    @opportunity_stage  		= Opportunity.stages
-    @opportunity_account		= Account.all.map(&:name)
-	end
+  before_action :authenticate_user!
+  before_action :set_opportunity, only: [ :show, :update, :destroy ]
 
-	def create
-    @opportunity = Opportunity.new params[:opportunity]
-    if @opportunity.save
-      redirect_to opportunity_path @opportunity, flash[:notice] = 'New Opportunity Created'
-    else
-      render :new
-    end
-  end
-  
   def index
     @opportunities = Opportunity.all
   end
 
+  def new
+    @opportunity = Opportunity.new
+  end
+
   def show
-		@opportunity 						= Opportunity.find params['id']
-		@opportunity_owner  	  = User.all.map(&:email)
-    @opportunity_type		   	= Opportunity.types
-    @opportunity_stage  		= Opportunity.stages
-    @opportunity_account		= Account.all.map(&:name)
-	end
+  end
 
-	def update
-    @opportunity = Opportunity.find params[:id]
-
-    if @opportunity.update_attributes params[:opportunity]
-      redirect_to opportunity_path @opportunity, flash[:notice] = 'Opportunity Successfully Updated'
+  def create
+    @opportunity = Opportunity.new(opportunity_params)
+    if @opportunity.save
+      redirect_to opportunity_path(@opportunity), flash: { notice: "New Opportunity Created" }
     else
-      render :edit
+      render json: { errors: @opportunity.errors }, status: :unprocessable_entity
     end
   end
 
+  def edit
+    @opportunity = Opportunity.find(params[:id])
+  end
+
+  def update
+    if @opportunity.update(opportunity_params)
+      redirect_to opportunity_path(@opportunity), notice: "Opportunity Successfully Updated"
+    else
+      render json: { errors: @opportunity.errors }, status: :unprocessable_entity
+    end
+  end
 
   def destroy
-    @opportunity = Opportunity.find params[:id]
-    
     if @opportunity.destroy
-      flash[:notice] = 'Opportunity Deleted'
-      redirect_to :back
+      flash[:notice] = "Opportunity Deleted"
+      redirect_back(fallback_location: opportunities_path)
     else
-      flash[:error] = 'Opportunity could not be deleted'
-      redirect_to :back
+      flash[:error] = "Opportunity could not be deleted"
+      redirect_back(fallback_location: opportunities_path)
     end
   end
 
+  private
+
+  def set_opportunity
+    @opportunity = Opportunity.find(params[:id])
+  end
+
+  def opportunity_params
+    params.require(:opportunity).permit(:opportunity_name, :account_name, :type, :amount, :stage, :owner, :probability, :contact_name, :comments, :closing_date)
+  end
 end

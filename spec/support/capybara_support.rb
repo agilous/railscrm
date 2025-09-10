@@ -2,8 +2,8 @@
 # fill_in_fields :user, :email => 'bob@smith.com'
 def fill_in_fields *args
   raise 'Too many arguments!' if args.size > 2
-  prefix = args.first.is_a?(Hash) ? '' : "#{ args.shift }_" 
-  args.last.each { |field, value| fill_in "#{ prefix }#{ field }", :with => value }
+  prefix = args.first.is_a?(Hash) ? '' : "#{ args.shift }_"
+  args.last.each { |field, value| fill_in "#{ prefix }#{ field }", with: value }
 end
 
 def reload_page
@@ -19,15 +19,15 @@ def fetch_cookies
   @cookies = session.cookie_jar.instance_variable_get '@cookies'
 end
 
-def should_be_on path
-  current_path.should == path.split('?').first #ignore query string
+def should_be_on(path)
+  current_path.should == path.split('?').first # ignore query string
 end
 
-def should_not_be_on path
+def should_not_be_on(path)
   current_path.should_not == path
 end
 
-def dom_id obj
+def dom_id(obj)
   "#{ obj.class.model_name.underscore }_#{ obj.id }".downcase
 end
 

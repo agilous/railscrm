@@ -1,45 +1,56 @@
 class AccountsController < ApplicationController
-  before_filter :authenticate_user!
-  
-	def index
-		@accounts = Account.all
-	end
-  
-	def new
-		@account = Account.new
-	end
+  before_action :authenticate_user!
+  before_action :set_account, only: [ :show, :update, :destroy ]
 
-	def show
-		@account = Account.find params[:id]
-	end
+  def index
+    @accounts = Account.all
+  end
 
-	def create
-    @account = Account.create params[:account]
-	    if @account.save
-	      redirect_to accounts_path, flash: { notice: 'New Account Created'}
-	    else
-	      render :new
-	    end
-	end
+  def new
+    @account = Account.new
+  end
 
-	def update
-		@account = Account.find params[:id]
+  def show
+  end
 
-		 if @account.update_attributes params[:account]
-      redirect_to account_path @account, flash[:notice] = 'Account Updated'
+  def create
+    @account = Account.new(account_params)
+    if @account.save
+      redirect_to accounts_path, flash: { notice: "New Account Created" }
     else
-      render :edit
+      render json: { errors: @account.errors }, status: :unprocessable_entity
     end
   end
 
-	def destroy
-    @account = Account.find params[:id]
-    if @account.destroy
-      flash[:notice] = 'Account Deleted'
-      redirect_to :back
+  def edit
+    @account = Account.find(params[:id])
+  end
+
+  def update
+    if @account.update(account_params)
+      redirect_to account_path(@account), notice: "Account Updated"
     else
-      flash[:error] = 'Account could not be deleted'
-      redirect_to :back
+      render json: { errors: @account.errors }, status: :unprocessable_entity
     end
-	end
+  end
+
+  def destroy
+    if @account.destroy
+      flash[:notice] = "Account Deleted"
+      redirect_back(fallback_location: accounts_path)
+    else
+      flash[:error] = "Account could not be deleted"
+      redirect_back(fallback_location: accounts_path)
+    end
+  end
+
+  private
+
+  def set_account
+    @account = Account.find(params[:id])
+  end
+
+  def account_params
+    params.require(:account).permit(:name, :phone, :website, :email, :address, :city, :state, :zip, :assigned_to)
+  end
 end

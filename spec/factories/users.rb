@@ -28,4 +28,13 @@ FactoryBot.define do
       end
     end
   end
+
+  factory :approved_user, parent: :user do
+    approved { true }
+  end
+
+  factory :admin_user, parent: :user do
+    admin { true }
+    approved { true }
+  end
 end

@@ -1,50 +1,59 @@
 class ContactsController < ApplicationController
-  before_filter :authenticate_user!
+  before_action :authenticate_user!
+  before_action :set_contact, only: [ :show, :update, :destroy ]
 
   def index
-    @contact = Contact.all
+    @contacts = Contact.all
   end
-  
+
   def new
     @contact = Contact.new
   end
-  
+
+  def show
+  end
+
   def create
-    @contact = Contact.new params[:contact]
+    @contact = Contact.new(contact_params)
     if @contact.save
-      redirect_to contacts_path, flash: { notice: 'New Contact Created'}
+      redirect_to contacts_path, flash: { notice: "New Contact Created" }
     else
-      render :new
+      render json: { errors: @contact.errors }, status: :unprocessable_entity
     end
+  end
+
+  def edit
+    @contact = Contact.find(params[:id])
   end
 
   def update
-    @contact = Contact.find params[:id]
-
-    if @contact.update_attributes params[:contact]
-      redirect_to contact_path @contact, flash[:notice] = 'Contact Updated'
+    if @contact.update(contact_params)
+      redirect_to contact_path(@contact), notice: "Contact Updated"
     else
-      render :edit
+      render json: { errors: @contact.errors }, status: :unprocessable_entity
     end
   end
-
 
   def destroy
-    @contact = Contact.find params[:id]
-    if @contact == @current_user
-      flash[:notice] = 'Cannot delete yourself'
-      redirect_to :back 
+    if @contact == current_user
+      flash[:notice] = "Cannot delete yourself"
+      redirect_back(fallback_location: contacts_path)
     elsif @contact.destroy
-      flash[:notice] = 'Contact Deleted'
-      redirect_to :back
+      flash[:notice] = "Contact Deleted"
+      redirect_back(fallback_location: contacts_path)
     else
-      flash[:error] = 'Contact could not be deleted'
-      redirect_to :back
+      flash[:error] = "Contact could not be deleted"
+      redirect_back(fallback_location: contacts_path)
     end
   end
-  
-  def show
-    @contact = Contact.find params[:id]
+
+  private
+
+  def set_contact
+    @contact = Contact.find(params[:id])
   end
 
+  def contact_params
+    params.require(:contact).permit(:first_name, :last_name, :company, :email, :phone, :address, :city, :state, :zip)
+  end
 end
