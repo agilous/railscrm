@@ -1,34 +1,28 @@
 class UsersController < ApplicationController
-  before_filter :authenticate_user!#, only: :index
-
-  def dashboard
-    @leads = Lead.where(lead_owner: current_user.email).to_a
-    @tasks = Task.where(assigned_to: current_user.email).to_a
-  end
+  before_action :authenticate_user!
+  before_action :admin_only, only: [ :index, :approve ]
+  before_action :set_user, only: [ :approve ]
 
   def index
-    @approved_users = User.all.select {|user| user.approved}
-    @pending_users = User.all.reject {|user| user.approved}
+    @users = User.all
+  end
+
+  def dashboard
+    @user = current_user
   end
 
   def approve
-    @user = User.find params[:id]
-    @user.update_attributes(approved: true)
-    if @user.save
-      redirect_to :back, flash: { notice: 'User has successfully been appproved'}
-      UserMailer.notify_approval(@user).deliver
-    else
-      redirect_to :back, flash: { notice: 'Unable to approve user'}
-    end
+    @user.update(approved: true)
+    redirect_to admin_path, notice: "User has been approved."
   end
 
-  def destroy
-    @user = User.find params[:id]
-    if @user.destroy
-      redirect_to :back, flash: { notice: 'User has successfully been deleted'}
-    else
-      redirect_to :back, flash: { notice: 'Unable to delete user'}
-    end 
+  private
+
+  def set_user
+    @user = User.find(params[:id])
   end
 
+  def admin_only
+    redirect_to root_path, alert: "Not authorized" unless current_user.admin?
+  end
 end

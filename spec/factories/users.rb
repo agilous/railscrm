@@ -1,26 +1,31 @@
-FactoryGirl.define do
-  sequence :email do |n|
-    "user#{n}@example.com"
-  end
-
+FactoryBot.define do
   factory :user do
-    first_name            'Test'
-    last_name             'User'
-    phone                 '1231231234'
-    email
-    password              'password'
-    password_confirmation 'password'
+    sequence(:email) { |n| "user#{n}@example.com" }
+    sequence(:first_name) { |n| "User#{n}" }
+    last_name { "Doe" }
+    company { "Test Company" }
+    phone { "555-0100" }
+    password { "password123" }
+    password_confirmation { "password123" }
+    approved { true }
+    admin { false }
 
-
-    factory :admin_user do
-      approved true
-      admin true
+    trait :admin do
+      admin { true }
     end
 
-    factory :approved_user do
-      approved true
+    trait :unapproved do
+      approved { false }
     end
-    
+
+    trait :with_leads do
+      transient do
+        leads_count { 3 }
+      end
+
+      after(:create) do |user, evaluator|
+        create_list(:lead, evaluator.leads_count, assigned_to: user)
+      end
+    end
   end
-
 end

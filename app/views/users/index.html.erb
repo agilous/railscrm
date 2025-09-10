@@ -1,0 +1,32 @@
+<h1>Admin - Manage Users</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Company</th>
+      <th>Approved</th>
+      <th>Admin</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= user.full_name %></td>
+        <td><%= user.email %></td>
+        <td><%= user.company %></td>
+        <td><%= user.approved? ? 'Yes' : 'No' %></td>
+        <td><%= user.admin? ? 'Yes' : 'No' %></td>
+        <td>
+          <% unless user.approved? %>
+            <%= link_to 'Approve', approve_user_path(user), method: :get %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to 'Back to Dashboard', dashboard_path %>

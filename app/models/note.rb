@@ -1,7 +1,5 @@
-class Note
-  include Mongoid::Document
-  
-  field :content
-  
-  belongs_to :lead
+class Note < ApplicationRecord
+  belongs_to :notable, polymorphic: true
+
+  validates_presence_of :content
 end

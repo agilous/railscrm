@@ -1,7 +1,5 @@
-# Load the rails application
-require File.expand_path('../application', __FILE__)
-require 'gibberish'
+# Load the Rails application.
+require_relative "application"
 
-# Initialize the rails application
-RebelFoundation::Application.initialize!
-::KEY = Gibberish::AES.new("awerwrREWdfER1645")
+# Initialize the Rails application.
+Rails.application.initialize!

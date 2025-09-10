@@ -1,25 +1,22 @@
-RebelFoundation::Application.routes.draw do
-
+Rails.application.routes.draw do
   devise_for :users
 
   devise_scope :user do
-    match "logout" => "devise/sessions#destroy", as: "logout"  
-    match "login" => "devise/sessions#new", as: "login"  
-    match "signup" => "devise/registrations#new", as: "signup"
-    match "dashboard" => "users#dashboard", as: "dashboard"
-    match "admin"=> "users#index", as: "admin"
+    match "logout" => "devise/sessions#destroy", as: "logout", via: [ :get, :delete ]
+    match "login" => "devise/sessions#new", as: "login", via: [ :get, :post ]
+    match "signup" => "devise/registrations#new", as: "signup", via: [ :get, :post ]
+    match "dashboard" => "users#dashboard", as: "dashboard", via: :get
+    match "admin" => "users#index", as: "admin", via: :get
   end
 
-  match "web_to_lead" => "leads#new_web_lead", :as => "web_to_lead"
-  match "create_lead" => "leads#create_web_lead", :as => "create_lead"
-  match "generate" => "leads#external_form"
-  
-  resources :organizations
+  # Web-to-Lead functionality
+  match "web_to_lead" => "leads#new_web_lead", as: "web_to_lead", via: :get
+  match "create_lead" => "leads#create_web_lead", as: "create_lead", via: :post
+  match "generate" => "leads#external_form", via: :get
+
+  # Resource routes
   resources :leads do
     resources :notes
-  end
-
-  resources :leads do
     member do
       get :convert
     end
@@ -30,13 +27,16 @@ RebelFoundation::Application.routes.draw do
       get :approve
     end
   end
-  
 
   resources :tasks
   resources :contacts
   resources :accounts
   resources :opportunities
-  
-  
-  root to: 'pages#index'
+
+  # Health check and PWA routes
+  get "up" => "rails/health#show", as: :rails_health_check
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+
+  root to: "pages#index"
 end
