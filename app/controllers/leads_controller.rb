@@ -3,7 +3,29 @@ class LeadsController < ApplicationController
   before_action :set_lead, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @leads = Lead.all
+    @leads = Lead.includes(:assigned_to)
+
+    # Apply filters
+    @leads = @leads.search_by_name(params[:name]) if params[:name].present?
+    @leads = @leads.search_by_company(params[:company]) if params[:company].present?
+    @leads = @leads.created_since(params[:created_since]) if params[:created_since].present?
+    @leads = @leads.created_before(params[:created_before]) if params[:created_before].present?
+    @leads = @leads.with_status(params[:status]) if params[:status].present?
+    @leads = @leads.where(assigned_to_id: params[:assigned_to]) if params[:assigned_to].present?
+
+    # Apply sorting
+    @leads = apply_sorting(@leads)
+
+    @leads = @leads.page(params[:page])
+                   .per(25)
+
+    # For the filter dropdowns
+    @lead_statuses = Lead.status
+    @users = User.where(approved: true).order(:first_name, :last_name)
+
+    # For sorting
+    @current_sort = params[:sort] || "created_at"
+    @current_direction = params[:direction] || "desc"
   end
 
   def new
@@ -91,6 +113,41 @@ class LeadsController < ApplicationController
 
   def set_lead
     @lead = Lead.find(params[:id])
+  end
+
+  def apply_sorting(scope)
+    sort_column = params[:sort] || "created_at"
+    sort_direction = params[:direction] || "desc"
+
+    # Validate sort column to prevent SQL injection
+    allowed_columns = %w[first_name last_name email company lead_status assigned_to created_at]
+    sort_column = "created_at" unless allowed_columns.include?(sort_column)
+
+    # Validate sort direction
+    sort_direction = "asc" unless %w[asc desc].include?(sort_direction)
+
+    case sort_column
+    when "first_name", "last_name"
+      # For name sorting, combine first and last name
+      if sort_direction == "asc"
+        scope.order(Arel.sql("CONCAT(first_name, ' ', last_name) ASC"))
+      else
+        scope.order(Arel.sql("CONCAT(first_name, ' ', last_name) DESC"))
+      end
+    when "assigned_to"
+      # Join with users table to sort by assigned user name
+      if sort_direction == "asc"
+        scope.joins(:assigned_to).order("users.first_name ASC, users.last_name ASC")
+      else
+        scope.joins(:assigned_to).order("users.first_name DESC, users.last_name DESC")
+      end
+    else
+      if sort_direction == "asc"
+        scope.order("#{sort_column} ASC")
+      else
+        scope.order("#{sort_column} DESC")
+      end
+    end
   end
 
   def lead_params

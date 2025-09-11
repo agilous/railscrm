@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_10_220032) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_11_123451) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -90,6 +90,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_220032) do
     t.date "closing_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "pipedrive_mappings", force: :cascade do |t|
+    t.string "pipedrive_type", null: false
+    t.integer "pipedrive_id", null: false
+    t.integer "rails_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["pipedrive_type", "pipedrive_id"], name: "index_pipedrive_mappings_on_pipedrive_type_and_pipedrive_id", unique: true
+    t.index ["rails_id"], name: "index_pipedrive_mappings_on_rails_id"
   end
 
   create_table "tasks", force: :cascade do |t|
