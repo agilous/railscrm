@@ -18,7 +18,7 @@ class OpportunitiesController < ApplicationController
     if @opportunity.save
       redirect_to opportunity_path(@opportunity), flash: { notice: "New Opportunity Created" }
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -30,7 +30,7 @@ class OpportunitiesController < ApplicationController
     if @opportunity.update(opportunity_params)
       redirect_to opportunity_path(@opportunity), notice: "Opportunity Successfully Updated"
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

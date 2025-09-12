@@ -22,7 +22,7 @@ class TasksController < ApplicationController
         TaskMailer.notify_new_task(@task.assignee, @task).deliver_later
       end
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -38,7 +38,7 @@ class TasksController < ApplicationController
         TaskMailer.notify_updated_task(@task.assignee, @task).deliver_later
       end
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

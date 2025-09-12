@@ -56,7 +56,7 @@ class LeadsController < ApplicationController
       @lead_status = Lead.status if Lead.respond_to?(:status)
       @lead_sources = Lead.sources if Lead.respond_to?(:sources)
       @lead_interests = Lead.interests if Lead.respond_to?(:interests)
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -80,7 +80,7 @@ class LeadsController < ApplicationController
         @lead_status = Lead.status if Lead.respond_to?(:status)
         @lead_sources = Lead.sources if Lead.respond_to?(:sources)
         @lead_interests = Lead.interests if Lead.respond_to?(:interests)
-        render :edit, status: :unprocessable_entity
+        render :edit, status: :unprocessable_content
       end
     end
   end
@@ -105,7 +105,7 @@ class LeadsController < ApplicationController
     if @lead.save
       redirect_to root_path, notice: "Thank you for your interest!"
     else
-      render :external_form, status: :unprocessable_entity
+      render :external_form, status: :unprocessable_content
     end
   end
 

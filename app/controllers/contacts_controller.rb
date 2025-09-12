@@ -18,7 +18,7 @@ class ContactsController < ApplicationController
     if @contact.save
       redirect_to contacts_path, flash: { notice: "New Contact Created" }
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -30,7 +30,7 @@ class ContactsController < ApplicationController
     if @contact.update(contact_params)
       redirect_to contact_path(@contact), notice: "Contact Updated"
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

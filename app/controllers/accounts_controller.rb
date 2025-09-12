@@ -18,7 +18,7 @@ class AccountsController < ApplicationController
     if @account.save
       redirect_to accounts_path, flash: { notice: "New Account Created" }
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -30,7 +30,7 @@ class AccountsController < ApplicationController
     if @account.update(account_params)
       redirect_to account_path(@account), notice: "Account Updated"
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

@@ -118,7 +118,7 @@ RSpec.describe 'Users API', type: :request do
         post '/users', params: { user: invalid_attributes }
 
         # Assert
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body['errors']).to include('Email is invalid')
         expect(User.count).to eq(0)
       end
