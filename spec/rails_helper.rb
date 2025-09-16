@@ -99,18 +99,47 @@ Shoulda::Matchers.configure do |config|
   end
 end
 
-# Capybara configuration with Playwright (Rails 8 advantage)
-require 'capybara/playwright'
+# Capybara configuration with Selenium Chrome (cross-platform compatible)
+require 'selenium-webdriver'
 
-Capybara.register_driver(:playwright) do |app|
-  Capybara::Playwright::Driver.new(app,
-    browser_type: :chromium,
-    headless: true
+# Helper method to find Chrome executable across platforms
+def find_chrome_executable
+  chrome_paths = [
+    '/usr/bin/chromium-browser',         # Linux (Chromium) - prioritize reliable option
+    '/snap/bin/chromium',                # Linux (Snap)
+    '/opt/google/chrome/google-chrome',  # Linux (Google Chrome direct path)
+    '/usr/bin/google-chrome-stable',     # Linux (Google Chrome stable)
+    '/usr/bin/google-chrome',            # Linux (Google Chrome symlink)
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', # macOS
+    '/Applications/Chromium.app/Contents/MacOS/Chromium'            # macOS Chromium
+  ]
+
+  chrome_paths.find { |path| File.executable?(path) }
+end
+
+# Configure Selenium Chrome driver with cross-platform support
+Capybara.register_driver :selenium_chrome_headless do |app|
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument('--headless')
+  options.add_argument('--no-sandbox')
+  options.add_argument('--disable-dev-shm-usage')
+  options.add_argument('--disable-gpu')
+  options.add_argument('--remote-debugging-port=9222')
+
+  # Set Chrome binary path if found
+  chrome_path = find_chrome_executable
+  if chrome_path
+    options.binary = chrome_path
+  end
+
+  Capybara::Selenium::Driver.new(app,
+    browser: :chrome,
+    options: options
   )
 end
 
-# For JavaScript-enabled tests, use Playwright
-Capybara.javascript_driver = :playwright
+# For JavaScript-enabled tests, use Selenium Chrome
+Capybara.javascript_driver = :selenium_chrome_headless
 # For non-JS tests, use the faster rack_test
 Capybara.default_driver = :rack_test
 

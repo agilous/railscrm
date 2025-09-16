@@ -10,6 +10,10 @@ end
 
 APP_ROOT = File.expand_path('..', __dir__)
 Dir.chdir(APP_ROOT) do
+  terminal_message("Building Tailwind CSS...")
+  system("bundle exec rails tailwindcss:build")
+  terminal_message("Done.\n\n")
+
   terminal_message("Running Ruby Tests...")
   ruby_tests_passed = system("bundle exec rspec --format progress 2>/dev/null")
   terminal_message("Done.\n\n")
