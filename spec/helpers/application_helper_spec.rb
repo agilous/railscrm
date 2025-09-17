@@ -9,6 +9,7 @@ RSpec.describe ApplicationHelper, type: :helper do
       allow(helper).to receive(:request).and_return(mock_request)
       allow(mock_request).to receive(:query_parameters).and_return(base_params)
       allow(helper).to receive(:leads_path) { |params| "/leads?#{params.to_query}" }
+      allow(helper).to receive(:controller_name).and_return('leads')
     end
 
     context 'when column is not currently sorted' do

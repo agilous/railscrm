@@ -5,12 +5,12 @@ class ContactsController < ApplicationController
   def index
     @contacts = Contact.all
 
-    # Apply filters
-    @contacts = @contacts.where("first_name ILIKE ? OR last_name ILIKE ?", "%#{params[:name]}%", "%#{params[:name]}%") if params[:name].present?
-    @contacts = @contacts.where("company ILIKE ?", "%#{params[:company]}%") if params[:company].present?
-    @contacts = @contacts.where("email ILIKE ?", "%#{params[:email]}%") if params[:email].present?
-    @contacts = @contacts.where("created_at >= ?", params[:created_since]) if params[:created_since].present?
-    @contacts = @contacts.where("created_at <= ?", params[:created_before]) if params[:created_before].present?
+    # Apply filters using scopes
+    @contacts = @contacts.by_name(params[:name]) if params[:name].present?
+    @contacts = @contacts.by_company(params[:company]) if params[:company].present?
+    @contacts = @contacts.by_email(params[:email]) if params[:email].present?
+    @contacts = @contacts.created_since(params[:created_since]) if params[:created_since].present?
+    @contacts = @contacts.created_before(params[:created_before]) if params[:created_before].present?
 
     # Apply sorting
     @contacts = apply_sorting(@contacts)
