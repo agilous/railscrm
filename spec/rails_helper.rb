@@ -120,7 +120,7 @@ end
 # Configure Selenium Chrome driver with cross-platform support
 Capybara.register_driver :selenium_chrome_headless do |app|
   options = Selenium::WebDriver::Chrome::Options.new
-  options.add_argument('--headless')
+  options.add_argument('--headless=new')
   options.add_argument('--no-sandbox')
   options.add_argument('--disable-dev-shm-usage')
   options.add_argument('--disable-gpu')
@@ -132,10 +132,52 @@ Capybara.register_driver :selenium_chrome_headless do |app|
     options.binary = chrome_path
   end
 
-  Capybara::Selenium::Driver.new(app,
-    browser: :chrome,
-    options: options
-  )
+  # OS-specific configuration to handle driver compatibility
+  case RUBY_PLATFORM
+  when /darwin/
+    # macOS: Use the compatible driver from Selenium's cache
+    # Check for cached compatible driver
+    cached_driver_path = Dir.glob(File.expand_path("~/.cache/selenium/chromedriver/mac-*/131.*/chromedriver")).first
+
+    if cached_driver_path && File.executable?(cached_driver_path)
+      # Use the cached compatible driver
+      service = Selenium::WebDriver::Chrome::Service.new(path: cached_driver_path)
+      Capybara::Selenium::Driver.new(app,
+        browser: :chrome,
+        options: options,
+        service: service
+      )
+    else
+      # Fallback: Let Selenium download the correct driver
+      # by temporarily removing incompatible drivers from PATH
+      original_path = ENV['PATH']
+      begin
+        ENV['PATH'] = original_path.split(':').reject { |p|
+          p.include?('/opt/homebrew') || p.include?('/usr/local/bin')
+        }.join(':')
+
+        driver = Capybara::Selenium::Driver.new(app,
+          browser: :chrome,
+          options: options
+        )
+      ensure
+        ENV['PATH'] = original_path
+      end
+      driver
+    end
+  when /linux/
+    # Linux: Standard configuration works well
+    Capybara::Selenium::Driver.new(app,
+      browser: :chrome,
+      options: options
+    )
+  else
+    # Default fallback
+    Capybara::Selenium::Driver.new(app,
+      browser: :chrome,
+      options: options
+    )
+  end
 end
 
 # For JavaScript-enabled tests, use Selenium Chrome

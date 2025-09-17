@@ -57,7 +57,7 @@ end
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
-  gem "selenium-webdriver"
+  gem "selenium-webdriver", "~> 4.27"
   # Modern browser testing - faster and more reliable than Selenium
   gem "playwright-ruby-client"
   gem "capybara-playwright-driver"
