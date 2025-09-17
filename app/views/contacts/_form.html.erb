@@ -12,59 +12,87 @@
 
   <div class="bg-white shadow-sm rounded-lg">
     <div class="px-4 py-5 sm:p-6">
-      <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Contact Information</h3>
-      
+      <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Personal Information</h3>
+
       <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
         <div>
           <%= f.label :first_name, class: "block text-sm font-medium text-gray-700" %>
-          <%= f.text_field :first_name, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.text_field :first_name,
+              class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+              placeholder: "John" %>
         </div>
 
         <div>
           <%= f.label :last_name, class: "block text-sm font-medium text-gray-700" %>
-          <%= f.text_field :last_name, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.text_field :last_name,
+              class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+              placeholder: "Doe" %>
         </div>
 
         <div>
           <%= f.label :email, class: "block text-sm font-medium text-gray-700" %>
-          <%= f.email_field :email, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.email_field :email,
+              class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+              placeholder: "john.doe@example.com" %>
         </div>
 
         <div>
           <%= f.label :phone, class: "block text-sm font-medium text-gray-700" %>
-          <%= f.telephone_field :phone, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.telephone_field :phone,
+              class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+              placeholder: "+1 (555) 123-4567" %>
         </div>
 
         <div class="sm:col-span-2">
           <%= f.label :company, class: "block text-sm font-medium text-gray-700" %>
-          <%= f.text_field :company, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.text_field :company,
+              class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+              placeholder: "Acme Corporation" %>
         </div>
+      </div>
+    </div>
+  </div>
 
+  <div class="bg-white shadow-sm rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+      <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Address Information</h3>
+
+      <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
         <div class="sm:col-span-2">
-          <%= f.label :address, class: "block text-sm font-medium text-gray-700" %>
-          <%= f.text_field :address, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.label :address, "Street Address", class: "block text-sm font-medium text-gray-700" %>
+          <%= f.text_field :address,
+              class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+              placeholder: "123 Main Street" %>
         </div>
 
         <div>
           <%= f.label :city, class: "block text-sm font-medium text-gray-700" %>
-          <%= f.text_field :city, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.text_field :city,
+              class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+              placeholder: "San Francisco" %>
         </div>
 
         <div>
-          <%= f.label :state, class: "block text-sm font-medium text-gray-700" %>
-          <%= f.text_field :state, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.label :state, "State / Province", class: "block text-sm font-medium text-gray-700" %>
+          <%= f.text_field :state,
+              class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+              placeholder: "CA" %>
         </div>
 
         <div>
-          <%= f.label :zip, class: "block text-sm font-medium text-gray-700" %>
-          <%= f.text_field :zip, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.label :zip, "ZIP / Postal Code", class: "block text-sm font-medium text-gray-700" %>
+          <%= f.text_field :zip,
+              class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+              placeholder: "94102" %>
         </div>
       </div>
     </div>
   </div>
 
   <div class="flex justify-end space-x-3">
-    <%= link_to 'Cancel', contacts_path, class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
-    <%= f.submit class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+    <%= link_to 'Cancel', contacts_path,
+        class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+    <%= f.submit @contact.new_record? ? "Create Contact" : "Update Contact",
+        class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
   </div>
 <% end %>
