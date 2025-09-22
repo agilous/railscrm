@@ -1,0 +1,138 @@
+<div class="max-w-4xl mx-auto">
+  <div class="md:flex md:items-center md:justify-between mb-6">
+    <div class="flex-1 min-w-0">
+      <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+        Web-to-Lead Form Generator
+      </h2>
+      <p class="mt-2 text-sm text-gray-500">
+        Create a form that can be embedded on your website to capture leads from visitors
+      </p>
+    </div>
+  </div>
+
+  <div class="bg-white shadow-sm rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+      <div class="mb-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">How it works</h3>
+        <div class="prose prose-sm text-gray-500">
+          <ol class="list-decimal list-inside space-y-1">
+            <li>Enter the URL where visitors should be redirected after submitting the form</li>
+            <li>Select the fields you want to include in your web form</li>
+            <li>Click "Generate Form" to create the HTML code</li>
+            <li>Copy and paste the generated code into your website</li>
+          </ol>
+        </div>
+      </div>
+
+      <%= form_tag generate_path, method: :post, class: "space-y-6" do %>
+        <!-- Redirect URL Configuration -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div>
+            <%= label_tag :redirect_url, "Redirect URL", class: "block text-sm font-medium text-gray-700" %>
+            <%= text_field_tag :redirect_url, nil,
+                placeholder: "https://example.com/thank-you",
+                class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+                required: true %>
+            <p class="mt-1 text-xs text-gray-500">The page visitors will see after submitting the form</p>
+          </div>
+        </div>
+
+        <!-- Field Selection -->
+        <div>
+          <h4 class="text-sm font-medium text-gray-900 mb-4">Select Form Fields</h4>
+          <div class="space-y-4">
+            <!-- Contact Information Fields -->
+            <div>
+              <h5 class="text-xs font-medium text-gray-700 uppercase tracking-wider mb-2">Contact Information</h5>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <% ['first_name', 'last_name', 'email', 'phone', 'company'].each do |field| %>
+                    <label class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                      <%= check_box_tag field, field, field.in?(['first_name', 'last_name', 'email']),
+                          class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+                      <span class="text-sm text-gray-700">
+                        <%= field.humanize %>
+                        <% if field.in?(['first_name', 'last_name', 'email']) %>
+                          <span class="text-xs text-gray-500">(recommended)</span>
+                        <% end %>
+                      </span>
+                    </label>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Address Fields -->
+            <div>
+              <h5 class="text-xs font-medium text-gray-700 uppercase tracking-wider mb-2">Address Information</h5>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <% ['address', 'city', 'state', 'zip'].each do |field| %>
+                    <label class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                      <%= check_box_tag field, field, false,
+                          class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+                      <span class="text-sm text-gray-700"><%= field.humanize %></span>
+                    </label>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Fields -->
+            <div>
+              <h5 class="text-xs font-medium text-gray-700 uppercase tracking-wider mb-2">Additional Information</h5>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <% ['interested_in', 'lead_source', 'comments'].each do |field| %>
+                    <label class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                      <%= check_box_tag field, field, field == 'comments',
+                          class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+                      <span class="text-sm text-gray-700">
+                        <%= field.humanize %>
+                        <% if field == 'comments' %>
+                          <span class="text-xs text-gray-500">(recommended)</span>
+                        <% end %>
+                      </span>
+                    </label>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Style Options -->
+        <div>
+          <h4 class="text-sm font-medium text-gray-900 mb-4">Form Style</h4>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="space-y-3">
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <%= radio_button_tag :form_style, 'basic', true,
+                    class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" %>
+                <div>
+                  <span class="text-sm font-medium text-gray-700">Basic HTML</span>
+                  <p class="text-xs text-gray-500">Simple form without styling (you can add your own CSS)</p>
+                </div>
+              </label>
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <%= radio_button_tag :form_style, 'styled', false,
+                    class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" %>
+                <div>
+                  <span class="text-sm font-medium text-gray-700">Styled Form</span>
+                  <p class="text-xs text-gray-500">Includes basic inline CSS styling</p>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3 pt-6 border-t">
+          <%= link_to 'Cancel', leads_path,
+              class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+          <%= submit_tag "Generate Form",
+              class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

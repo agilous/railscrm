@@ -1,0 +1,147 @@
+<div class="max-w-4xl mx-auto">
+  <div class="md:flex md:items-center md:justify-between mb-6">
+    <div class="flex-1 min-w-0">
+      <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+        Convert Lead: <%= @lead.full_name %>
+      </h2>
+      <p class="mt-1 text-sm text-gray-500">
+        Convert this lead into an account and opportunity
+      </p>
+    </div>
+  </div>
+
+  <%= form_with model: @lead, url: convert_lead_path(@lead), local: true, class: "space-y-6" do |f| %>
+    <% if @lead.errors.any? %>
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <h3 class="text-sm font-medium">Please fix the following errors:</h3>
+        <ul class="mt-2 text-sm list-disc list-inside">
+          <% @lead.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <!-- Lead Information (Read-only) -->
+    <div class="bg-white shadow-sm rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Lead Information</h3>
+
+        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+          <div>
+            <%= f.label :first_name, class: "block text-sm font-medium text-gray-700" %>
+            <%= f.text_field :first_name,
+                readonly: true,
+                class: "mt-1 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          </div>
+
+          <div>
+            <%= f.label :last_name, class: "block text-sm font-medium text-gray-700" %>
+            <%= f.text_field :last_name,
+                readonly: true,
+                class: "mt-1 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          </div>
+
+          <div>
+            <%= f.label :email, class: "block text-sm font-medium text-gray-700" %>
+            <%= f.email_field :email,
+                readonly: true,
+                class: "mt-1 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          </div>
+
+          <div>
+            <%= f.label :phone, class: "block text-sm font-medium text-gray-700" %>
+            <%= f.telephone_field :phone,
+                readonly: true,
+                class: "mt-1 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          </div>
+
+          <div class="sm:col-span-2">
+            <%= f.label :company, class: "block text-sm font-medium text-gray-700" %>
+            <%= f.text_field :company,
+                readonly: true,
+                class: "mt-1 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversion Options -->
+    <div class="bg-white shadow-sm rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Conversion Options</h3>
+
+        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+          <div>
+            <%= f.label :account_name, "Account Name", class: "block text-sm font-medium text-gray-700" %>
+            <% if @accounts && @accounts.any? %>
+              <%= f.select :account_name,
+                  options_for_select(@accounts.map { |a| [a.name, a.id] }),
+                  { prompt: "Create new account or select existing" },
+                  { class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" } %>
+            <% else %>
+              <%= f.text_field :account_name,
+                  placeholder: "Enter account name",
+                  value: @lead.company,
+                  class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+            <% end %>
+            <p class="mt-1 text-xs text-gray-500">The account that will be created or associated with this lead</p>
+          </div>
+
+          <div>
+            <%= f.label :opportunity_name, "Opportunity Name", class: "block text-sm font-medium text-gray-700" %>
+            <%= f.text_field :opportunity_name,
+                placeholder: "Enter opportunity name",
+                class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+            <p class="mt-1 text-xs text-gray-500">Leave blank to skip opportunity creation</p>
+          </div>
+
+          <div>
+            <%= f.label :opportunity_owner, "Opportunity Owner", class: "block text-sm font-medium text-gray-700" %>
+            <% if @opportunity_owner && @opportunity_owner.any? %>
+              <%= f.select :opportunity_owner,
+                  options_for_select(@opportunity_owner.map { |o| [o, o] }, @lead.lead_owner),
+                  { prompt: "Select owner" },
+                  { class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" } %>
+            <% else %>
+              <%= f.text_field :opportunity_owner,
+                  value: @lead.lead_owner,
+                  placeholder: "Enter opportunity owner",
+                  class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+            <% end %>
+            <p class="mt-1 text-xs text-gray-500">The person responsible for this opportunity</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversion Summary -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-blue-800">What will happen:</h3>
+          <div class="mt-2 text-sm text-blue-700">
+            <ul class="list-disc list-inside space-y-1">
+              <li>This lead will be converted to a contact</li>
+              <li>An account will be created or associated</li>
+              <li>An opportunity will be created (if name provided)</li>
+              <li>All lead history and notes will be preserved</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end space-x-3">
+      <%= link_to 'Cancel', lead_path(@lead),
+          class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+      <%= f.submit 'Convert Lead',
+          class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" %>
+    </div>
+  <% end %>
+</div>

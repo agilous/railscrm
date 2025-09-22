@@ -296,7 +296,7 @@ class PipedriveSync
       end
     end
 
-    store_pipedrive_mapping("Account", org["id"], account&.id)
+    store_pipedrive_mapping("Organization", org["id"], account&.id)
   end
 
   def sync_person(person)
@@ -502,7 +502,10 @@ class PipedriveSync
     # We'll attach them to the appropriate Rails model
 
     notable = find_notable_for_note(note)
-    return unless notable
+    unless notable
+      puts "  Skipping note #{note['id']}: No associated entity found (deal_id: #{note['deal_id']}, person_id: #{note['person_id']}, org_id: #{note['org_id']})"
+      return
+    end
 
     rails_note = Note.find_by(
       content: note["content"],
@@ -516,13 +519,19 @@ class PipedriveSync
       )
 
       if rails_note.save
-        puts "  Created note for #{notable.class.name}"
+        puts "  Created note for #{notable.class.name} ID: #{notable.id}"
+        # Only store mapping if save was successful
+        store_pipedrive_mapping("Note", note["id"], rails_note.id)
       else
         puts "  Failed to create note: #{rails_note.errors.full_messages.join(', ')}"
+        # Don't store mapping for failed saves
+        nil
       end
+    else
+      puts "  Note already exists for #{notable.class.name} ID: #{notable.id}"
+      # Store mapping even for existing notes to ensure consistency
+      store_pipedrive_mapping("Note", note["id"], rails_note.id)
     end
-
-    store_pipedrive_mapping("Note", note["id"], rails_note&.id)
   end
 
   # Helper methods

@@ -1,0 +1,121 @@
+<div class="max-w-6xl mx-auto">
+  <div class="md:flex md:items-center md:justify-between mb-6">
+    <div class="flex-1 min-w-0">
+      <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+        Generated Web Form
+      </h2>
+      <p class="mt-2 text-sm text-gray-500">
+        Copy the code below and paste it into your website
+      </p>
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    <!-- Instructions -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-blue-800">How to use this form:</h3>
+          <div class="mt-2 text-sm text-blue-700">
+            <ol class="list-decimal list-inside space-y-1">
+              <li>Copy all the code from the text area below</li>
+              <li>Paste it into your website's HTML where you want the form to appear</li>
+              <li>Test the form to ensure leads are being captured correctly</li>
+              <li>Style the form to match your website's design (if needed)</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generated Form Code -->
+    <div class="bg-white shadow-sm rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">HTML Code</h3>
+          <button onclick="copyToClipboard()"
+                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg class="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+            </svg>
+            Copy to Clipboard
+          </button>
+        </div>
+
+        <div class="relative">
+          <%= text_area_tag "web_form",
+              (render file: 'leads/convert_form'),
+              readonly: true,
+              id: "generated-form-code",
+              class: "block w-full font-mono text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 p-4",
+              style: "min-height: 400px; resize: vertical;" %>
+
+          <div id="copy-notification"
+               class="hidden absolute top-2 right-2 bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm font-medium">
+            Copied!
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center text-sm text-gray-500">
+          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Tip: You can customize the form's appearance by adding your own CSS styles
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="bg-white shadow-sm rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Form Preview</h3>
+        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+          <div class="prose max-w-none">
+            <%= raw(render file: 'leads/convert_form') %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-between">
+      <%= link_to "Generate Another Form", new_web_lead_path,
+          class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+
+      <%= link_to "Back to Leads", leads_path,
+          class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyToClipboard() {
+  const codeTextarea = document.getElementById('generated-form-code');
+  const notification = document.getElementById('copy-notification');
+
+  // Select the text
+  codeTextarea.select();
+  codeTextarea.setSelectionRange(0, 99999); // For mobile devices
+
+  // Copy the text
+  try {
+    document.execCommand('copy');
+
+    // Show notification
+    notification.classList.remove('hidden');
+    setTimeout(() => {
+      notification.classList.add('hidden');
+    }, 2000);
+  } catch (err) {
+    alert('Failed to copy text. Please select and copy manually.');
+  }
+
+  // Deselect the text
+  window.getSelection().removeAllRanges();
+}
+</script>
