@@ -1,115 +1,60 @@
 require_relative "../pipedrive_sync"
 
 namespace :pipedrive do
-  desc "Sync all data from Pipedrive to Rails CRM"
-  task sync: :environment do
-    puts "Starting Pipedrive sync..."
+  desc "One-time production migration from Pipedrive to RailsCRM"
+  task migrate: :environment do
+    start_time = Time.current
+
+    puts "\n" + "=" * 80
+    puts " PIPEDRIVE → RAILSCRM ONE-TIME MIGRATION"
+    puts "=" * 80
+    puts " Started: #{start_time}"
+    puts "=" * 80
 
     begin
+      # Run the migration
+      puts "\nStarting data migration..."
       sync = PipedriveSync.new
       sync.sync_all
-      puts "Sync completed successfully!"
+
+      # Show results
+      puts "\n" + "=" * 80
+      puts " MIGRATION RESULTS"
+      puts "=" * 80
+
+      PipedriveMapping.group(:pipedrive_type).count.each do |type, count|
+        puts "  #{type.ljust(15)}: #{count.to_s.rjust(6)}"
+      end
+
+      duration = ((Time.current - start_time) / 60).round(1)
+      puts "=" * 80
+      puts " Duration: #{duration} minutes"
+      puts " Completed: #{Time.current}"
+      puts "=" * 80
+
     rescue => e
-      puts "Error during sync: #{e.message}"
-      puts e.backtrace.join("\n")
+      puts "\n[ERROR] Migration failed: #{e.message}"
+      puts e.backtrace.first(10).join("\n")
+      exit 1
     end
   end
 
-  desc "Sync only users from Pipedrive"
-  task sync_users: :environment do
-    puts "Syncing users from Pipedrive..."
-
-    begin
-      sync = PipedriveSync.new
-      sync.sync_users
-      puts "User sync completed!"
-    rescue => e
-      puts "Error syncing users: #{e.message}"
-    end
-  end
-
-  desc "Sync only organizations from Pipedrive"
-  task sync_organizations: :environment do
-    puts "Syncing organizations from Pipedrive..."
-
-    begin
-      sync = PipedriveSync.new
-      sync.sync_organizations
-      puts "Organization sync completed!"
-    rescue => e
-      puts "Error syncing organizations: #{e.message}"
-    end
-  end
-
-  desc "Sync only persons from Pipedrive"
-  task sync_persons: :environment do
-    puts "Syncing persons from Pipedrive..."
-
-    begin
-      sync = PipedriveSync.new
-      sync.sync_persons
-      puts "Person sync completed!"
-    rescue => e
-      puts "Error syncing persons: #{e.message}"
-    end
-  end
-
-  desc "Sync only deals from Pipedrive"
-  task sync_deals: :environment do
-    puts "Syncing deals from Pipedrive..."
-
-    begin
-      sync = PipedriveSync.new
-      sync.sync_deals
-      puts "Deal sync completed!"
-    rescue => e
-      puts "Error syncing deals: #{e.message}"
-    end
-  end
-
-  desc "Sync only activities from Pipedrive"
-  task sync_activities: :environment do
-    puts "Syncing activities from Pipedrive..."
-
-    begin
-      sync = PipedriveSync.new
-      sync.sync_activities
-      puts "Activity sync completed!"
-    rescue => e
-      puts "Error syncing activities: #{e.message}"
-    end
-  end
-
-  desc "Clear all Pipedrive mappings (use with caution)"
-  task clear_mappings: :environment do
-    print "Are you sure you want to clear all Pipedrive mappings? (yes/no): "
-    input = STDIN.gets.chomp
-
-    if input.downcase == "yes"
-      PipedriveMapping.destroy_all
-      puts "All Pipedrive mappings have been cleared."
-    else
-      puts "Operation cancelled."
-    end
-  end
-
-  desc "Show sync statistics"
+  desc "Show migration statistics"
   task stats: :environment do
-    puts "\n=== Pipedrive Sync Statistics ==="
+    puts "\n=== Pipedrive Migration Status ==="
     puts "Total mappings: #{PipedriveMapping.count}"
 
-    PipedriveMapping.distinct.pluck(:pipedrive_type).each do |type|
-      count = PipedriveMapping.where(pipedrive_type: type).count
-      puts "  #{type}: #{count}"
+    PipedriveMapping.group(:pipedrive_type).count.each do |type, count|
+      puts "  #{type.ljust(15)}: #{count.to_s.rjust(6)}"
     end
 
-    puts "\n=== Rails CRM Statistics ==="
-    puts "  Users: #{User.count}"
-    puts "  Accounts: #{Account.count}"
-    puts "  Contacts: #{Contact.count}"
-    puts "  Leads: #{Lead.count}"
-    puts "  Opportunities: #{Opportunity.count}"
-    puts "  Tasks: #{Task.count}"
-    puts "  Notes: #{Note.count}"
+    puts "\n=== Rails CRM Data ==="
+    puts "  Users          : #{User.count.to_s.rjust(6)}"
+    puts "  Accounts       : #{Account.count.to_s.rjust(6)}"
+    puts "  Contacts       : #{Contact.count.to_s.rjust(6)}"
+    puts "  Leads          : #{Lead.count.to_s.rjust(6)}"
+    puts "  Opportunities  : #{Opportunity.count.to_s.rjust(6)}"
+    puts "  Tasks          : #{Task.count.to_s.rjust(6)}"
+    puts "  Notes          : #{Note.count.to_s.rjust(6)}"
   end
 end
