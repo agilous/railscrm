@@ -1,5 +1,5 @@
 module ApplicationHelper
-  def sortable_header(column, title, current_sort: nil, current_direction: nil)
+  def sortable_header(column, title, current_sort: nil, current_direction: nil, path: nil)
     # Determine the direction for the next click
     direction = if column == current_sort
       current_direction == "asc" ? "desc" : "asc"
@@ -10,8 +10,11 @@ module ApplicationHelper
     # Build the link with current filter parameters preserved
     link_params = request.query_parameters.merge(sort: column, direction: direction)
 
+    # Use the provided path or infer from controller
+    link_path = path || url_for(controller: controller_name, action: "index")
+
     # Create the link
-    link_to leads_path(link_params), class: "group inline-flex items-center hover:text-gray-900" do
+    link_to "#{link_path}?#{link_params.to_query}", class: "group inline-flex items-center hover:text-gray-900" do
       content = title.html_safe
 
       # Add sort indicator
