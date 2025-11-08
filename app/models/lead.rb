@@ -16,32 +16,13 @@ class Lead < ApplicationRecord
   SOURCES = [ [ "Web Lead", "web" ], [ "Phone", "phone" ], [ "Referral", "referral" ], [ "Conference", "conference" ] ]
   INTERESTS = [ [ "Web Application", "web_app" ], [ "IOS", "ios" ] ]
 
-  # Search scopes
-  scope :search_by_name, ->(query) {
-    return all if query.blank?
-    where("first_name ILIKE :query OR last_name ILIKE :query OR CONCAT(first_name, ' ', last_name) ILIKE :query",
-          query: "%#{query}%")
-  }
-
-  scope :search_by_company, ->(query) {
-    return all if query.blank?
-    where("company ILIKE ?", "%#{query}%")
-  }
-
-  scope :created_before, ->(date) {
-    return all if date.blank?
-    where("created_at < ?", date.to_date.end_of_day)
-  }
-
-  scope :created_since, ->(date) {
-    return all if date.blank?
-    where("created_at >= ?", date.to_date.beginning_of_day)
-  }
-
-  scope :with_status, ->(status) {
-    return all if status.blank?
-    where(lead_status: status)
-  }
+  # Filtering scopes
+  scope :search_by_name, ->(name) { where("first_name ILIKE :name OR last_name ILIKE :name", name: "%#{sanitize_sql_like(name)}%") }
+  scope :search_by_company, ->(company) { where("company ILIKE :company", company: "%#{sanitize_sql_like(company)}%") }
+  scope :by_email, ->(email) { where("email ILIKE :email", email: "%#{sanitize_sql_like(email)}%") }
+  scope :created_since, ->(date) { where("created_at >= ?", date) }
+  scope :created_before, ->(date) { where("created_at <= ?", date) }
+  scope :with_status, ->(status) { where(lead_status: status) }
 
   class << self
     def status

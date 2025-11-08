@@ -9,6 +9,17 @@ class Opportunity < ApplicationRecord
             [ "Presentation", "presentation" ], [ "Negotiation", "negotiation" ], [ "Final Review", "final_review" ],
             [ "Closed/Won", "closed_won" ], [ "Closed/Lost", "closed_lost" ] ]
 
+  # Filtering scopes
+  scope :by_name, ->(name) { where("opportunity_name ILIKE :name", name: "%#{sanitize_sql_like(name)}%") }
+  scope :by_account, ->(account) { where("account_name ILIKE :account", account: "%#{sanitize_sql_like(account)}%") }
+  scope :by_owner, ->(owner) { where("owner ILIKE :owner", owner: "%#{sanitize_sql_like(owner)}%") }
+  scope :by_stage, ->(stage) { where(stage: stage) }
+  scope :by_type, ->(type) { where(type: type) }
+  scope :created_since, ->(date) { where("created_at >= ?", date) }
+  scope :created_before, ->(date) { where("created_at <= ?", date) }
+  scope :closing_after, ->(date) { where("closing_date >= ?", date) }
+  scope :closing_before, ->(date) { where("closing_date <= ?", date) }
+
   class << self
     def types
       TYPES
