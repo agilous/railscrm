@@ -10,9 +10,9 @@ class Opportunity < ApplicationRecord
             [ "Closed/Won", "closed_won" ], [ "Closed/Lost", "closed_lost" ] ]
 
   # Filtering scopes
-  scope :by_name, ->(name) { where("opportunity_name ILIKE :name", name: "%#{sanitize_sql_like(name)}%") }
-  scope :by_account, ->(account) { where("account_name ILIKE :account", account: "%#{sanitize_sql_like(account)}%") }
-  scope :by_owner, ->(owner) { where("owner ILIKE :owner", owner: "%#{sanitize_sql_like(owner)}%") }
+  scope :by_name, ->(name) { where("opportunity_name ILIKE :name", name: "%#{Opportunity.sanitize_sql_like(name)}%") }
+  scope :by_account, ->(account) { where("account_name ILIKE :account", account: "%#{Opportunity.sanitize_sql_like(account)}%") }
+  scope :by_owner, ->(owner) { where("owner ILIKE :owner", owner: "%#{Opportunity.sanitize_sql_like(owner)}%") }
   scope :by_stage, ->(stage) { where(stage: stage) }
   scope :by_type, ->(type) { where(type: type) }
   scope :created_since, ->(date) { where("created_at >= ?", date) }

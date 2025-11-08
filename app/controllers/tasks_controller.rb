@@ -99,7 +99,7 @@ class TasksController < ApplicationController
 
     # Handle assignee sorting with join
     if sort_column == "assignee_id"
-      scope.joins(:assignee).order("users.first_name #{sort_direction}, users.last_name #{sort_direction}")
+      scope.joins(:assignee).order("users.first_name" => sort_direction, "users.last_name" => sort_direction)
     else
       scope.order(sort_column => sort_direction)
     end
