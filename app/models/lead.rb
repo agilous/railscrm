@@ -17,12 +17,30 @@ class Lead < ApplicationRecord
   INTERESTS = [ [ "Web Application", "web_app" ], [ "IOS", "ios" ] ]
 
   # Filtering scopes
-  scope :search_by_name, ->(name) { where("first_name ILIKE :name OR last_name ILIKE :name", name: "%#{sanitize_sql_like(name)}%") }
-  scope :search_by_company, ->(company) { where("company ILIKE :company", company: "%#{sanitize_sql_like(company)}%") }
-  scope :by_email, ->(email) { where("email ILIKE :email", email: "%#{sanitize_sql_like(email)}%") }
-  scope :created_since, ->(date) { where("created_at >= ?", date) }
-  scope :created_before, ->(date) { where("created_at <= ?", date) }
-  scope :with_status, ->(status) { where(lead_status: status) }
+  scope :search_by_name, ->(name) {
+    return all if name.blank?
+    where("first_name ILIKE :name OR last_name ILIKE :name OR CONCAT(first_name, ' ', last_name) ILIKE :name", name: "%#{sanitize_sql_like(name)}%")
+  }
+  scope :search_by_company, ->(company) {
+    return all if company.blank?
+    where("company ILIKE :company", company: "%#{sanitize_sql_like(company)}%")
+  }
+  scope :by_email, ->(email) {
+    return all if email.blank?
+    where("email ILIKE :email", email: "%#{sanitize_sql_like(email)}%")
+  }
+  scope :created_since, ->(date) {
+    return all if date.blank?
+    where("created_at >= ?", date)
+  }
+  scope :created_before, ->(date) {
+    return all if date.blank?
+    where("created_at <= ?", date)
+  }
+  scope :with_status, ->(status) {
+    return all if status.blank?
+    where(lead_status: status)
+  }
 
   class << self
     def status

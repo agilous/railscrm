@@ -27,7 +27,7 @@ class TasksController < ApplicationController
     @current_sort = params[:sort] || "due_date"
     @current_direction = params[:direction] || "asc"
     @users = User.where(approved: true).order(:first_name, :last_name)
-    @priorities = [["High", "high"], ["Medium", "medium"], ["Low", "low"]]
+    @priorities = [ [ "High", "high" ], [ "Medium", "medium" ], [ "Low", "low" ] ]
   end
 
   def new
