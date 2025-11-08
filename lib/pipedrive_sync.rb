@@ -406,95 +406,94 @@ class PipedriveSync
   end
 
   def sync_deal(deal)
-    opportunity = Opportunity.find_by(opportunity_name: deal["title"])
+    # For one-time migration, check if we've already synced this specific Pipedrive deal
+    existing_mapping = PipedriveMapping.find_by(
+      pipedrive_type: "Opportunity",
+      pipedrive_id: deal["id"]
+    )
+
+    if existing_mapping
+      puts "  Deal #{deal['id']} already synced to Opportunity #{existing_mapping.rails_id}"
+      return
+    end
 
     # Map Pipedrive stage to our stages
     stage = map_deal_stage(deal["stage_id"], deal["status"])
 
-    if opportunity.nil?
-      opportunity = Opportunity.new(
-        opportunity_name: deal["title"],
-        account_name: get_organization_name(deal["org_id"]) || "Unknown",
-        amount: deal["value"],
-        stage: stage,
-        owner: map_owner_name(deal["owner_id"]) || "admin",
-        probability: deal["probability"],
-        contact_name: get_person_name(deal["person_id"]),
-        closing_date: deal["expected_close_date"] || deal["close_time"],
-        type: "new_customer"
+    # Create a new opportunity for each Pipedrive deal (no deduplication by title)
+    opportunity = Opportunity.new(
+      opportunity_name: deal["title"],
+      account_name: get_organization_name(deal["org_id"]) || "Unknown",
+      amount: deal["value"],
+      stage: stage,
+      owner: map_owner_name(deal["owner_id"]) || "admin",
+      probability: deal["probability"],
+      contact_name: get_person_name(deal["person_id"]),
+      closing_date: deal["expected_close_date"] || deal["close_time"],
+      type: "new_customer"
+    )
+
+    if opportunity.save
+      # Update timestamps after save to preserve original Pipedrive dates
+      original_created = deal["add_time"] ? DateTime.parse(deal["add_time"]) : opportunity.created_at
+      original_updated = deal["update_time"] ? DateTime.parse(deal["update_time"]) : opportunity.updated_at
+
+      opportunity.update_columns(
+        created_at: original_created,
+        updated_at: original_updated
       )
 
-      if opportunity.save
-        # Update timestamps after save to preserve original Pipedrive dates
-        original_created = deal["add_time"] ? DateTime.parse(deal["add_time"]) : opportunity.created_at
-        original_updated = deal["update_time"] ? DateTime.parse(deal["update_time"]) : opportunity.updated_at
+      puts "  Created opportunity: #{opportunity.opportunity_name} (ID: #{opportunity.id}, Pipedrive: #{deal['id']}, date: #{original_created.strftime('%Y-%m-%d')})"
 
-        opportunity.update_columns(
-          created_at: original_created,
-          updated_at: original_updated
-        )
-
-        puts "  Created opportunity: #{opportunity.opportunity_name} (original date: #{original_created.strftime('%Y-%m-%d')})"
-      else
-        puts "  Failed to create opportunity: #{deal['title']} - #{opportunity.errors.full_messages.join(', ')}"
-      end
+      # Store the mapping
+      store_pipedrive_mapping("Opportunity", deal["id"], opportunity.id)
     else
-      # Update existing opportunity
-      if opportunity.update(
-        amount: deal["value"] || opportunity.amount,
-        stage: stage || opportunity.stage,
-        probability: deal["probability"] || opportunity.probability,
-        closing_date: deal["expected_close_date"] || deal["close_time"] || opportunity.closing_date
-      )
-        puts "  Updated opportunity: #{opportunity.opportunity_name}"
-      end
+      puts "  Failed to create opportunity for Pipedrive deal #{deal['id']}: #{deal['title']} - #{opportunity.errors.full_messages.join(', ')}"
     end
-
-    store_pipedrive_mapping("Opportunity", deal["id"], opportunity&.id)
   end
 
   def sync_activity(activity)
     assignee = get_or_create_default_user
     return unless assignee
 
-    task = Task.find_by(title: activity["subject"])
+    # For one-time migration, check if we've already synced this specific Pipedrive activity
+    existing_mapping = PipedriveMapping.find_by(
+      pipedrive_type: "Task",
+      pipedrive_id: activity["id"]
+    )
 
-    if task.nil?
-      task = Task.new(
-        title: activity["subject"] || "Untitled Activity",
-        description: activity["note"] || activity["type"],
-        due_date: parse_activity_due_date(activity),
-        completed: activity["done"],
-        priority: activity["marked_as_done_time"] ? "low" : "medium",
-        assignee: assignee
-      )
-
-      if task.save
-        # Update timestamps after save to preserve original Pipedrive dates
-        original_created = activity["add_time"] ? DateTime.parse(activity["add_time"]) : task.created_at
-        original_updated = activity["update_time"] ? DateTime.parse(activity["update_time"]) : task.updated_at
-
-        task.update_columns(
-          created_at: original_created,
-          updated_at: original_updated
-        )
-
-        puts "  Created task: #{task.title} (original date: #{original_created.strftime('%Y-%m-%d')})"
-      else
-        puts "  Failed to create task: #{activity['subject']} - #{task.errors.full_messages.join(', ')}"
-      end
-    else
-      # Update existing task
-      if task.update(
-        description: activity["note"] || task.description,
-        due_date: parse_activity_due_date(activity) || task.due_date,
-        completed: activity["done"]
-      )
-        puts "  Updated task: #{task.title}"
-      end
+    if existing_mapping
+      puts "  Activity #{activity['id']} already synced to Task #{existing_mapping.rails_id}"
+      return
     end
 
-    store_pipedrive_mapping("Task", activity["id"], task&.id)
+    # Create a new task for each Pipedrive activity (no deduplication by title)
+    task = Task.new(
+      title: activity["subject"] || "Untitled Activity",
+      description: activity["note"] || activity["type"],
+      due_date: parse_activity_due_date(activity),
+      completed: activity["done"],
+      priority: activity["marked_as_done_time"] ? "low" : "medium",
+      assignee: assignee
+    )
+
+    if task.save
+      # Update timestamps after save to preserve original Pipedrive dates
+      original_created = activity["add_time"] ? DateTime.parse(activity["add_time"]) : task.created_at
+      original_updated = activity["update_time"] ? DateTime.parse(activity["update_time"]) : task.updated_at
+
+      task.update_columns(
+        created_at: original_created,
+        updated_at: original_updated
+      )
+
+      puts "  Created task: #{task.title} (ID: #{task.id}, Pipedrive: #{activity['id']}, date: #{original_created.strftime('%Y-%m-%d')})"
+
+      # Store the mapping
+      store_pipedrive_mapping("Task", activity["id"], task.id)
+    else
+      puts "  Failed to create task for Pipedrive activity #{activity['id']}: #{activity['subject']} - #{task.errors.full_messages.join(', ')}"
+    end
   end
 
   def sync_note(note)
