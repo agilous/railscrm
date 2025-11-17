@@ -1,4 +1,22 @@
 module ApplicationHelper
+  def safe_external_url(url)
+    return nil if url.blank?
+
+    # Ensure URL starts with http:// or https://
+    normalized_url = url.start_with?("http://", "https://") ? url : "https://#{url}"
+
+    # Parse and validate the URL
+    begin
+      uri = URI.parse(normalized_url)
+      # Only allow http and https protocols
+      return normalized_url if [ "http", "https" ].include?(uri.scheme)
+    rescue URI::InvalidURIError
+      # Return nil for invalid URLs
+    end
+
+    nil
+  end
+
   def sortable_header(column, title, current_sort: nil, current_direction: nil, path: nil)
     # Determine the direction for the next click
     direction = if column == current_sort

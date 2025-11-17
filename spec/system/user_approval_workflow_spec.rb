@@ -13,7 +13,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
 
       fill_in 'Email', with: approved_user.email
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Signed in successfully.')
     end
@@ -27,7 +27,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
 
       fill_in 'Email', with: unapproved_user.email
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Your account is not approved yet.')
       expect(page).to have_current_path(new_user_session_path)
@@ -38,7 +38,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
 
       fill_in 'Email', with: unapproved_user.email
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
 
       # Check that the custom inactive message is displayed
       expect(page).to have_content('Your account is not approved yet.')
@@ -52,7 +52,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
 
       fill_in 'Email', with: 'newuser@example.com'
       fill_in 'Password', with: 'password123'
-      fill_in 'Password confirmation', with: 'password123'
+      fill_in 'Confirm password', with: 'password123'
       fill_in 'First name', with: 'John'
       fill_in 'Last name', with: 'Doe'
 
@@ -67,7 +67,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
       visit new_user_registration_path
       fill_in 'Email', with: 'immediate@example.com'
       fill_in 'Password', with: 'password123'
-      fill_in 'Password confirmation', with: 'password123'
+      fill_in 'Confirm password', with: 'password123'
       fill_in 'First name', with: 'Jane'
       fill_in 'Last name', with: 'Doe'
       click_button 'Sign up'
@@ -80,7 +80,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
       visit new_user_session_path
       fill_in 'Email', with: 'immediate@example.com'
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Signed in successfully.')
     end
@@ -100,7 +100,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
 
       fill_in 'Email', with: admin_user.email
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Signed in successfully.')
     end
@@ -120,7 +120,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
       visit new_user_session_path
       fill_in 'Email', with: user.email
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
 
       # Verify user information is preserved
       user.reload
@@ -140,7 +140,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
       visit new_user_session_path
       fill_in 'Email', with: user.email
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
       expect(page).to have_content('Signed in successfully.')
 
       # Sign out
@@ -153,7 +153,7 @@ RSpec.describe 'User Approval Workflow', type: :system do
       visit new_user_session_path
       fill_in 'Email', with: user.email
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Your account is not approved yet.')
     end

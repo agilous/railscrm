@@ -11,12 +11,12 @@ RSpec.describe 'User Authentication', type: :system do
     it 'allows a user to sign in with valid credentials' do
       visit new_user_session_path
 
-      expect(page).to have_content('Log in')
+      expect(page).to have_content('Sign in to your account')
 
       fill_in 'Email', with: user.email
       fill_in 'Password', with: 'password123'
 
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Signed in successfully.')
     end
@@ -28,7 +28,7 @@ RSpec.describe 'User Authentication', type: :system do
       fill_in 'Password', with: 'password123'
       check 'Remember me'
 
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Signed in successfully.')
     end
@@ -41,7 +41,7 @@ RSpec.describe 'User Authentication', type: :system do
       fill_in 'Email', with: 'nonexistent@example.com'
       fill_in 'Password', with: 'password123'
 
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Invalid Email or password.')
       expect(page).to have_current_path(new_user_session_path)
@@ -53,7 +53,7 @@ RSpec.describe 'User Authentication', type: :system do
       fill_in 'Email', with: user.email
       fill_in 'Password', with: 'wrongpassword'
 
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Invalid Email or password.')
       expect(page).to have_current_path(new_user_session_path)
@@ -62,7 +62,7 @@ RSpec.describe 'User Authentication', type: :system do
     it 'shows errors for blank fields' do
       visit new_user_session_path
 
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Invalid Email or password.')
     end
@@ -74,7 +74,7 @@ RSpec.describe 'User Authentication', type: :system do
       visit new_user_session_path
       fill_in 'Email', with: user.email
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
 
       expect(page).to have_content('Signed in successfully.')
 
@@ -106,7 +106,7 @@ RSpec.describe 'User Authentication', type: :system do
       visit new_user_session_path
       fill_in 'Email', with: user.email
       fill_in 'Password', with: 'password123'
-      click_button 'Log in'
+      click_button 'Sign in'
 
       user.reload
       expect(user.sign_in_count).to eq(initial_sign_in_count + 1)

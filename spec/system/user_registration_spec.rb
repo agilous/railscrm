@@ -9,11 +9,11 @@ RSpec.describe 'User Registration', type: :system do
     it 'allows a user to register with valid information' do
       visit new_user_registration_path
 
-      expect(page).to have_content('Sign up')
+      expect(page).to have_content('Create your account')
 
       fill_in 'Email', with: 'newuser@example.com'
       fill_in 'Password', with: 'password123'
-      fill_in 'Password confirmation', with: 'password123'
+      fill_in 'Confirm password', with: 'password123'
       fill_in 'First name', with: 'John'
       fill_in 'Last name', with: 'Doe'
       fill_in 'Company', with: 'Test Company'
@@ -49,7 +49,7 @@ RSpec.describe 'User Registration', type: :system do
 
       fill_in 'Email', with: 'user@example.com'
       fill_in 'Password', with: 'password123'
-      fill_in 'Password confirmation', with: 'different_password'
+      fill_in 'Confirm password', with: 'different_password'
 
       click_button 'Sign up'
 
@@ -64,7 +64,7 @@ RSpec.describe 'User Registration', type: :system do
 
       fill_in 'Email', with: 'existing@example.com'
       fill_in 'Password', with: 'password123'
-      fill_in 'Password confirmation', with: 'password123'
+      fill_in 'Confirm password', with: 'password123'
 
       click_button 'Sign up'
 
