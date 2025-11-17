@@ -163,12 +163,17 @@ namespace :pipedrive do
       # Add notes to leads only if the lead was saved successfully
       if lead.persisted?
         # Create note with multi-association system
-        note = Note.find_or_create_by(
-          content: "Potential customer from #{lead.lead_source}. Need to qualify further."
-        ) do |n|
-          n.created_at = rand(1..14).days.ago
+        note_content = "Potential customer from #{lead.lead_source}. Need to qualify further."
+        note = lead.notes.find_by(content: note_content)
+        random_created_at = rand(1..14).days.ago
+        if note
+          note.update(created_at: random_created_at)
+        else
+          note = lead.notes.create!(
+            content: note_content,
+            created_at: random_created_at
+          )
         end
-        note.add_notable(lead)
         puts "Created/found lead: #{lead.full_name}"
       else
         puts "Failed to create lead: #{lead.errors.full_messages.join(', ')}"

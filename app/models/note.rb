@@ -14,13 +14,11 @@ class Note < ApplicationRecord
   # Returns true if a new association was created, false if it already existed
   def add_notable(notable)
     association = note_associations.find_or_create_by(notable: notable)
-    association.persisted? && association.created_at == association.updated_at
+    association.previously_new_record?
   end
 
-  # Helper to get all associated notables
-  # Optimized to avoid loading all records into memory
+  # Helper to get all associated notables as relations (not loaded records)
   def all_notables
-    note_associations.pluck(:notable_type, :notable_id)
-      .map { |type, id| type.constantize.find(id) }
+    contacts + leads + opportunities + accounts
   end
 end
