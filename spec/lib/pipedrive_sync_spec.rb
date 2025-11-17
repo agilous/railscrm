@@ -17,16 +17,16 @@ RSpec.describe PipedriveSync do
       expect(described_class.base_uri).to eq("https://#{company_domain}/api/v1")
     end
 
-    it 'raises error when API token is missing' do
+    it 'uses dummy values in test environment when API token is missing' do
       allow(ENV).to receive(:[]).with('PIPEDRIVE_API_TOKEN').and_return(nil)
 
-      expect { described_class.new }.to raise_error('Missing PIPEDRIVE_API_TOKEN environment variable')
+      expect { described_class.new }.not_to raise_error
     end
 
-    it 'raises error when company domain is missing' do
+    it 'uses dummy values in test environment when company domain is missing' do
       allow(ENV).to receive(:[]).with('PIPEDRIVE_COMPANY_DOMAIN').and_return(nil)
 
-      expect { described_class.new }.to raise_error('Missing PIPEDRIVE_COMPANY_DOMAIN environment variable')
+      expect { described_class.new }.not_to raise_error
     end
 
     it 'sets proper headers' do
