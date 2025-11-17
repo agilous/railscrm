@@ -85,9 +85,16 @@ RSpec.describe 'Tasks', type: :request do
       }.to change(Task, :count).by(-1)
     end
 
-    it 'redirects to tasks index' do
+    it 'redirects to tasks index with success message' do
       delete task_path(task_to_delete)
       expect(response).to redirect_to(tasks_path)
+      follow_redirect!
+      expect(response.body).to include("Task Deleted")
+    end
+
+    it 'returns 404 for non-existent task' do
+      delete task_path(id: 99999)
+      expect(response).to have_http_status(:not_found)
     end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_11_123451) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_11_144409) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -27,6 +27,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_11_123451) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_accounts_on_name", unique: true
+  end
+
+  create_table "activities", force: :cascade do |t|
+    t.bigint "contact_id", null: false
+    t.string "activity_type", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.datetime "due_date"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contact_id"], name: "index_activities_on_contact_id"
   end
 
   create_table "contacts", force: :cascade do |t|
@@ -68,13 +80,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_11_123451) do
     t.index ["assigned_to_id"], name: "index_leads_on_assigned_to_id"
   end
 
-  create_table "notes", force: :cascade do |t|
-    t.text "content"
+  create_table "note_associations", force: :cascade do |t|
+    t.bigint "note_id", null: false
     t.string "notable_type", null: false
     t.bigint "notable_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["notable_type", "notable_id"], name: "index_notes_on_notable"
+    t.index ["notable_type", "notable_id"], name: "index_note_associations_on_notable"
+    t.index ["note_id", "notable_type", "notable_id"], name: "index_unique_note_associations", unique: true
+    t.index ["note_id"], name: "index_note_associations_on_note_id"
+  end
+
+  create_table "notes", force: :cascade do |t|
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "opportunities", force: :cascade do |t|
@@ -137,6 +157,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_11_123451) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "activities", "contacts"
   add_foreign_key "leads", "users", column: "assigned_to_id"
+  add_foreign_key "note_associations", "notes"
   add_foreign_key "tasks", "users", column: "assignee_id"
 end

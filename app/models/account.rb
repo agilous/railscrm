@@ -1,4 +1,7 @@
 class Account < ApplicationRecord
+  has_many :note_associations, as: :notable, dependent: :destroy
+  has_many :notes, through: :note_associations
+
   validates_presence_of :name, :phone
   validates :name, uniqueness: true
 

@@ -46,7 +46,10 @@ FactoryBot.define do
       end
 
       after(:create) do |lead, evaluator|
-        create_list(:note, evaluator.notes_count, notable: lead)
+        evaluator.notes_count.times do
+          note = create(:note)
+          note.add_notable(lead)
+        end
       end
     end
   end

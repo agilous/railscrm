@@ -428,7 +428,7 @@ class PipedriveSync
       stage: stage,
       owner: map_owner_name(deal["owner_id"]) || "admin",
       probability: deal["probability"],
-      contact_name: get_person_name(deal["person_id"]),
+      contact_name: get_person_email(deal["person_id"]) || get_person_name(deal["person_id"]),
       closing_date: deal["expected_close_date"] || deal["close_time"],
       type: "new_customer"
     )
@@ -497,40 +497,107 @@ class PipedriveSync
   end
 
   def sync_note(note)
-    # Notes in Pipedrive can be attached to deals, persons, or organizations
-    # We'll attach them to the appropriate Rails model
+    # Notes in Pipedrive can be attached to deals, persons, AND organizations
+    # We'll create associations to ALL applicable Rails models
 
-    notable = find_notable_for_note(note)
-    unless notable
-      puts "  Skipping note #{note['id']}: No associated entity found (deal_id: #{note['deal_id']}, person_id: #{note['person_id']}, org_id: #{note['org_id']})"
+    # Find all notables this note should be attached to
+    notables = find_all_notables_for_note(note)
+
+    if notables.empty?
+      puts "  Skipping note #{note['id']}: No associated entities found (deal_id: #{note['deal_id']}, person_id: #{note['person_id']}, org_id: #{note['org_id']})"
       return
     end
 
-    rails_note = Note.find_by(
-      content: note["content"],
-      notable: notable
-    )
+    # Check if note already exists (by content match)
+    rails_note = Note.find_by(content: note["content"])
 
     if rails_note.nil?
+      # Create new note without direct association
       rails_note = Note.new(
-        content: note["content"],
-        notable: notable
+        content: note["content"]
       )
 
       if rails_note.save
-        puts "  Created note for #{notable.class.name} ID: #{notable.id}"
-        # Only store mapping if save was successful
+        # Update timestamps after save to preserve original Pipedrive dates
+        if note["add_time"]
+          original_created = DateTime.parse(note["add_time"])
+          original_updated = note["update_time"] ? DateTime.parse(note["update_time"]) : original_created
+
+          rails_note.update_columns(
+            created_at: original_created,
+            updated_at: original_updated
+          )
+        end
+
+        # Create associations to all notables
+        notables.each do |notable|
+          rails_note.add_notable(notable)
+          puts "  Created note and attached to #{notable.class.name} ID: #{notable.id} (#{notable.respond_to?(:email) ? notable.email : notable.try(:name)})"
+        end
+
+        # Store mapping
         store_pipedrive_mapping("Note", note["id"], rails_note.id)
       else
         puts "  Failed to create note: #{rails_note.errors.full_messages.join(', ')}"
-        # Don't store mapping for failed saves
-        nil
       end
     else
-      puts "  Note already exists for #{notable.class.name} ID: #{notable.id}"
-      # Store mapping even for existing notes to ensure consistency
+      # Note exists, just add any missing associations
+      notables.each do |notable|
+        if rails_note.add_notable(notable)
+          puts "  Added existing note to #{notable.class.name} ID: #{notable.id}"
+        end
+      end
+
+      # Store mapping even for existing notes
       store_pipedrive_mapping("Note", note["id"], rails_note.id)
     end
+  end
+
+  def find_all_notables_for_note(note)
+    notables = []
+
+    # Check for deal/opportunity
+    if note["deal_id"]
+      mapping = PipedriveMapping.find_by(
+        pipedrive_type: "Opportunity",
+        pipedrive_id: note["deal_id"]
+      )
+      opportunity = Opportunity.find_by(id: mapping.rails_id) if mapping
+      notables << opportunity if opportunity
+    end
+
+    # Check for person (Contact or Lead)
+    if note["person_id"]
+      # Look for both Contact and Lead mappings
+      contact_mapping = PipedriveMapping.find_by(
+        pipedrive_type: "Contact",
+        pipedrive_id: note["person_id"]
+      )
+
+      if contact_mapping
+        contact = Contact.find_by(id: contact_mapping.rails_id)
+        notables << contact if contact
+      else
+        lead_mapping = PipedriveMapping.find_by(
+          pipedrive_type: "Lead",
+          pipedrive_id: note["person_id"]
+        )
+        lead = Lead.find_by(id: lead_mapping.rails_id) if lead_mapping
+        notables << lead if lead
+      end
+    end
+
+    # Check for organization/account
+    if note["org_id"]
+      mapping = PipedriveMapping.find_by(
+        pipedrive_type: "Organization",
+        pipedrive_id: note["org_id"]
+      )
+      account = Account.find_by(id: mapping.rails_id) if mapping
+      notables << account if account
+    end
+
+    notables
   end
 
   # Helper methods
@@ -605,19 +672,28 @@ class PipedriveSync
     # Handle both person_id as integer and as object with id field
     person_id = person_data.is_a?(Hash) ? person_data["id"] : person_data
 
-    mapping = PipedriveMapping.find_by(
-      pipedrive_type: "Person",
+    # Look for both Contact and Lead mappings since persons can be either
+    contact_mapping = PipedriveMapping.find_by(
+      pipedrive_type: "Contact",
       pipedrive_id: person_id
     )
 
-    if mapping
-      # Could be either Contact or Lead
-      contact = Contact.find_by(id: mapping.rails_id)
+    if contact_mapping
+      contact = Contact.find_by(id: contact_mapping.rails_id)
       return contact.full_name if contact
+    end
 
-      lead = Lead.find_by(id: mapping.rails_id)
-      lead.full_name if lead
-    elsif person_data.is_a?(Hash) && person_data["name"]
+    lead_mapping = PipedriveMapping.find_by(
+      pipedrive_type: "Lead",
+      pipedrive_id: person_id
+    )
+
+    if lead_mapping
+      lead = Lead.find_by(id: lead_mapping.rails_id)
+      return lead.full_name if lead
+    end
+
+    if person_data.is_a?(Hash) && person_data["name"]
       # If person data is already provided as object, use it directly
       person_data["name"]
     else
@@ -629,6 +705,36 @@ class PipedriveSync
 
       response["data"]["name"] if response.success? && response["data"]
     end
+  end
+
+  def get_person_email(person_data)
+    return nil unless person_data
+
+    # Handle both person_id as integer and as object with id field
+    person_id = person_data.is_a?(Hash) ? person_data["id"] : person_data
+
+    # Look for both Contact and Lead mappings since persons can be either
+    contact_mapping = PipedriveMapping.find_by(
+      pipedrive_type: "Contact",
+      pipedrive_id: person_id
+    )
+
+    if contact_mapping
+      contact = Contact.find_by(id: contact_mapping.rails_id)
+      return contact.email if contact
+    end
+
+    lead_mapping = PipedriveMapping.find_by(
+      pipedrive_type: "Lead",
+      pipedrive_id: person_id
+    )
+
+    if lead_mapping
+      lead = Lead.find_by(id: lead_mapping.rails_id)
+      return lead.email if lead
+    end
+
+    nil
   end
 
   def map_owner_name(owner_data)
@@ -707,17 +813,25 @@ class PipedriveSync
     # Try to find the associated object for the note
     if note["deal_id"]
       mapping = PipedriveMapping.find_by(
-        pipedrive_type: "Deal",
+        pipedrive_type: "Opportunity",
         pipedrive_id: note["deal_id"]
       )
       Opportunity.find_by(id: mapping.rails_id) if mapping
     elsif note["person_id"]
-      mapping = PipedriveMapping.find_by(
-        pipedrive_type: "Person",
+      # Look for both Contact and Lead mappings since persons can be either
+      contact_mapping = PipedriveMapping.find_by(
+        pipedrive_type: "Contact",
         pipedrive_id: note["person_id"]
       )
-      if mapping
-        Lead.find_by(id: mapping.rails_id) || Contact.find_by(id: mapping.rails_id)
+
+      if contact_mapping
+        Contact.find_by(id: contact_mapping.rails_id)
+      else
+        lead_mapping = PipedriveMapping.find_by(
+          pipedrive_type: "Lead",
+          pipedrive_id: note["person_id"]
+        )
+        Lead.find_by(id: lead_mapping.rails_id) if lead_mapping
       end
     elsif note["org_id"]
       mapping = PipedriveMapping.find_by(

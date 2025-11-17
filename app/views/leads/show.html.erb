@@ -137,10 +137,8 @@
           <!-- Notes List -->
           <div class="space-y-4">
             <%
-              # Get both Lead notes and related Account notes
-              lead_notes = @lead.notes
-              account_notes = @lead.company.present? ? Note.joins("INNER JOIN accounts ON accounts.id = notes.notable_id").where("accounts.name ILIKE ? AND notes.notable_type = 'Account'", "%#{@lead.company}%") : Note.none
-              all_notes = (lead_notes + account_notes).sort_by(&:created_at).reverse
+              # Get Lead notes using the new multi-association system
+              all_notes = @lead.notes.order(created_at: :desc)
             %>
 
             <% if all_notes.present? %>
@@ -150,7 +148,7 @@
                     <div class="text-sm text-gray-600">
                       <%= note.created_at.strftime("%B %d, %Y at %I:%M %p") %>
                     </div>
-                    <% if note.notable_type == 'Account' %>
+                    <% if note.accounts.any? %>
                       <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         Account Activity
                       </span>
@@ -159,9 +157,9 @@
                   <div class="text-sm text-gray-900">
                     <%= simple_format(note.content) %>
                   </div>
-                  <% if note.notable_type == 'Account' %>
+                  <% if note.accounts.any? %>
                     <div class="mt-2 text-xs text-gray-500">
-                      Related to <%= note.notable.name %>
+                      Related to <%= note.accounts.first.name %>
                     </div>
                   <% end %>
                 </div>

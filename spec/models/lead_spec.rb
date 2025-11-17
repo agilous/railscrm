@@ -134,7 +134,7 @@ RSpec.describe Lead, type: :model do
 
       expect(lead.notes.count).to eq(3)
       expect(lead.notes.first).to be_a(Note)
-      expect(lead.notes.first.notable).to eq(lead)
+      expect(lead.notes.first.leads).to include(lead)
     end
   end
 

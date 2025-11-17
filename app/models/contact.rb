@@ -1,4 +1,10 @@
 class Contact < ApplicationRecord
+  # Associations - Only include objects that can be synced from Pipedrive
+  has_many :note_associations, as: :notable, dependent: :destroy
+  has_many :notes, through: :note_associations
+  has_many :activities, dependent: :destroy
+  has_many :deals, class_name: "Opportunity", foreign_key: :contact_name, primary_key: :email
+
   validates :email, uniqueness: true,
                     format: { with: URI::MailTo::EMAIL_REGEXP,
                              message: "Invalid e-mail address" }

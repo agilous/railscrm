@@ -135,35 +135,23 @@ Capybara.register_driver :selenium_chrome_headless do |app|
   # OS-specific configuration to handle driver compatibility
   case RUBY_PLATFORM
   when /darwin/
-    # macOS: Use the compatible driver from Selenium's cache
-    # Check for cached compatible driver
-    cached_driver_path = Dir.glob(File.expand_path("~/.cache/selenium/chromedriver/mac-*/131.*/chromedriver")).first
+    # macOS: Use the system ChromeDriver which should match the installed Chrome
+    system_chromedriver = `which chromedriver`.strip
 
-    if cached_driver_path && File.executable?(cached_driver_path)
-      # Use the cached compatible driver
-      service = Selenium::WebDriver::Chrome::Service.new(path: cached_driver_path)
+    if system_chromedriver && !system_chromedriver.empty? && File.executable?(system_chromedriver)
+      # Use the system ChromeDriver
+      service = Selenium::WebDriver::Chrome::Service.new(path: system_chromedriver)
       Capybara::Selenium::Driver.new(app,
         browser: :chrome,
         options: options,
         service: service
       )
     else
-      # Fallback: Let Selenium download the correct driver
-      # by temporarily removing incompatible drivers from PATH
-      original_path = ENV['PATH']
-      begin
-        ENV['PATH'] = original_path.split(':').reject { |p|
-          p.include?('/opt/homebrew') || p.include?('/usr/local/bin')
-        }.join(':')
-
-        driver = Capybara::Selenium::Driver.new(app,
-          browser: :chrome,
-          options: options
-        )
-      ensure
-        ENV['PATH'] = original_path
-      end
-      driver
+      # Fallback: Let Selenium manage the driver
+      Capybara::Selenium::Driver.new(app,
+        browser: :chrome,
+        options: options
+      )
     end
   when /linux/
     # Linux: Standard configuration works well
@@ -188,3 +176,17 @@ Capybara.default_driver = :rack_test
 # Configure Capybara settings
 Capybara.default_max_wait_time = 5
 Capybara.server = :puma, { Silent: true }
+
+# Helper to handle Turbo confirm dialogs in delete tests
+RSpec.configure do |config|
+  config.before(:each, type: :system) do |example|
+    if example.metadata[:js]
+      driven_by :selenium_chrome_headless
+    end
+  end
+
+  config.before(:each, type: :system, js: true) do
+    # Override window.confirm to always return true for delete tests
+    page.execute_script('window.confirm = function() { return true; };')
+  end
+end

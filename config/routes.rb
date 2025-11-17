@@ -29,7 +29,12 @@ Rails.application.routes.draw do
   end
 
   resources :tasks
-  resources :contacts
+
+  resources :contacts do
+    resources :notes
+    resources :activities
+  end
+
   resources :accounts
   resources :opportunities
 

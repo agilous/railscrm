@@ -1,5 +1,23 @@
 class Note < ApplicationRecord
-  belongs_to :notable, polymorphic: true
+  # Multiple associations through join table
+  has_many :note_associations, dependent: :destroy
+  has_many :contacts, through: :note_associations, source: :notable, source_type: "Contact"
+  has_many :leads, through: :note_associations, source: :notable, source_type: "Lead"
+  has_many :opportunities, through: :note_associations, source: :notable, source_type: "Opportunity"
+  has_many :accounts, through: :note_associations, source: :notable, source_type: "Account"
+
+  # Keep the old association temporarily for backward compatibility during migration
+  belongs_to :notable, polymorphic: true, optional: true
 
   validates_presence_of :content
+
+  # Helper method to add associations
+  def add_notable(notable)
+    note_associations.find_or_create_by(notable: notable)
+  end
+
+  # Helper to get all associated notables
+  def all_notables
+    note_associations.includes(:notable).map(&:notable)
+  end
 end

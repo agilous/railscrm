@@ -86,9 +86,29 @@ RSpec.describe 'Opportunities', type: :request do
       }.to change(Opportunity, :count).by(-1)
     end
 
-    it 'redirects back' do
+    it 'redirects to opportunities index with success message' do
       delete opportunity_path(opportunity_to_delete)
-      expect(response).to have_http_status(:found)
+      expect(response).to redirect_to(opportunities_path)
+      follow_redirect!
+      expect(response.body).to include("Opportunity Deleted")
+    end
+
+    it 'deletes associated note associations but keeps the notes' do
+      note = create(:note)
+      note.add_notable(opportunity_to_delete)
+
+      expect {
+        delete opportunity_path(opportunity_to_delete)
+      }.to change(Opportunity, :count).by(-1)
+
+      # Note still exists but association is removed
+      expect(Note.exists?(note.id)).to be true
+      expect(note.reload.opportunities).to be_empty
+    end
+
+    it 'returns 404 for non-existent opportunity' do
+      delete opportunity_path(id: 99999)
+      expect(response).to have_http_status(:not_found)
     end
   end
 end

@@ -1,0 +1,131 @@
+<!-- Note display with multi-association indicators -->
+<div class="note-item bg-gray-50 rounded-lg p-4 mb-3 hover:bg-gray-100 transition-colors">
+  <div class="flex justify-between items-start">
+    <div class="flex-1">
+      <!-- Note content -->
+      <p class="text-sm text-gray-900 whitespace-pre-wrap"><%= note.content %></p>
+      
+      <!-- Multi-association badges -->
+      <% if note.note_associations.count > 1 %>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <span class="text-xs text-gray-500">Also on:</span>
+          <% note.all_notables.each do |notable| %>
+            <% next if defined?(current_notable) && notable == current_notable %>
+            <% case notable %>
+            <% when Contact %>
+              <a href="<%= contact_path(notable) %>" 
+                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200">
+                <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path>
+                </svg>
+                <%= notable.full_name %>
+              </a>
+            <% when Opportunity %>
+              <a href="<%= opportunity_path(notable) %>" 
+                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 hover:bg-purple-200">
+                <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
+                </svg>
+                <%= notable.opportunity_name %>
+              </a>
+            <% when Account %>
+              <a href="<%= account_path(notable) %>" 
+                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200">
+                <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"></path>
+                </svg>
+                <%= notable.name %>
+              </a>
+            <% when Lead %>
+              <a href="<%= lead_path(notable) %>" 
+                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path>
+                </svg>
+                <%= notable.full_name %>
+              </a>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+      
+      <!-- Note metadata -->
+      <div class="mt-2 flex items-center text-xs text-gray-500">
+        <span><%= time_ago_in_words(note.created_at) %> ago</span>
+        
+        <!-- Action buttons for managing associations -->
+        <div class="ml-auto flex space-x-2">
+          <button onclick="addAssociationModal(<%= note.id %>)" 
+                  class="text-blue-600 hover:text-blue-800"
+                  title="Link to another entity">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+            </svg>
+          </button>
+          
+          <% if note.note_associations.count > 1 %>
+            <button onclick="removeAssociationModal(<%= note.id %>, '<%= defined?(current_notable) ? "#{current_notable.class.name}-#{current_notable.id}" : "" %>')" 
+                    class="text-red-600 hover:text-red-800"
+                    title="Remove from this entity">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function addAssociationModal(noteId) {
+    // This would open a modal to add more associations
+    const entity = prompt('Enter entity type and ID (e.g., "Contact-5" or "Opportunity-10"):');
+    if (entity) {
+      const [type, id] = entity.split('-');
+      
+      fetch(`/notes/${noteId}/add_association`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ notable_type: type, notable_id: id })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert(data.message);
+        }
+      });
+    }
+  }
+  
+  function removeAssociationModal(noteId, currentNotable) {
+    if (confirm('Remove this note from the current view?')) {
+      const [type, id] = currentNotable.split('-');
+      
+      fetch(`/notes/${noteId}/remove_association`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ notable_type: type, notable_id: id })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert(data.message);
+        }
+      });
+    }
+  }
+</script>

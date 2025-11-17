@@ -2,6 +2,9 @@ class Opportunity < ApplicationRecord
   # Disable single-table inheritance for the 'type' column
   self.inheritance_column = nil
 
+  has_many :note_associations, as: :notable, dependent: :destroy
+  has_many :notes, through: :note_associations
+
   validates_presence_of :opportunity_name, :account_name, :owner
 
   TYPES = [ [ "New Customer", "new_customer" ], [ "Existing Customer", "existing_customer" ] ]

@@ -447,6 +447,24 @@ RSpec.describe 'Contacts', type: :request do
         }.to change(Contact, :count).by(-1)
       end
     end
+
+    it 'deletes associated note associations but keeps the notes' do
+      note = create(:note)
+      note.add_notable(contact_to_delete)
+
+      expect {
+        delete contact_path(contact_to_delete)
+      }.to change(Contact, :count).by(-1)
+
+      # Note still exists but association is removed
+      expect(Note.exists?(note.id)).to be true
+      expect(note.reload.contacts).to be_empty
+    end
+
+    it 'returns 404 for non-existent contact' do
+      delete contact_path(id: 99999)
+      expect(response).to have_http_status(:not_found)
+    end
   end
 
   describe 'authentication' do
