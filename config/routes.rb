@@ -37,6 +37,7 @@ Rails.application.routes.draw do
 
   resources :accounts
   resources :opportunities
+  resources :notes, only: [ :create ]
 
   # Health check and PWA routes
   get "up" => "rails/health#show", as: :rails_health_check

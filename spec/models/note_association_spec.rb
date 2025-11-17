@@ -29,7 +29,7 @@ RSpec.describe NoteAssociation, type: :model do
     end
 
     it 'allows same note to be associated with different notables' do
-      association1 = NoteAssociation.create!(
+      NoteAssociation.create!(
         note: note,
         notable: contact
       )

@@ -64,7 +64,11 @@ class ContactsController < ApplicationController
   private
 
   def set_contact
-    @contact = Contact.find(params[:id])
+    @contact = Contact.includes(
+      :activities,
+      :deals,
+      notes: :note_associations
+    ).find(params[:id])
   end
 
   def contact_params

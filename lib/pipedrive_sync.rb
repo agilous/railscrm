@@ -549,8 +549,11 @@ class PipedriveSync
     else
       # Note exists, just add any missing associations
       notables.each do |notable|
-        if rails_note.add_notable(notable)
+        was_created = rails_note.add_notable(notable)
+        if was_created
           puts "  Added existing note to #{notable.class.name} ID: #{notable.id}"
+        else
+          puts "  Note already associated with #{notable.class.name} ID: #{notable.id}"
         end
       end
 

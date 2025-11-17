@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :activity do
     contact { nil }
-    activity_type { "MyString" }
+    activity_type { Activity::ACTIVITY_TYPES.sample }
     title { "MyString" }
     description { "MyText" }
     completed_at { "2025-11-08 17:48:37" }

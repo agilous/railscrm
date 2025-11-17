@@ -9,11 +9,11 @@ RSpec.describe "Note Multi-Associations", type: :model do
 
   describe Note do
     describe 'associations' do
-      it { should have_many(:note_associations).dependent(:destroy) }
-      it { should have_many(:contacts).through(:note_associations) }
-      it { should have_many(:leads).through(:note_associations) }
-      it { should have_many(:opportunities).through(:note_associations) }
-      it { should have_many(:accounts).through(:note_associations) }
+      it { is_expected.to have_many(:note_associations).dependent(:destroy) }
+      it { is_expected.to have_many(:contacts).through(:note_associations) }
+      it { is_expected.to have_many(:leads).through(:note_associations) }
+      it { is_expected.to have_many(:opportunities).through(:note_associations) }
+      it { is_expected.to have_many(:accounts).through(:note_associations) }
     end
 
     describe '#add_notable' do

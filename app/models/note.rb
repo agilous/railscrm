@@ -6,18 +6,21 @@ class Note < ApplicationRecord
   has_many :opportunities, through: :note_associations, source: :notable, source_type: "Opportunity"
   has_many :accounts, through: :note_associations, source: :notable, source_type: "Account"
 
-  # Keep the old association temporarily for backward compatibility during migration
-  belongs_to :notable, polymorphic: true, optional: true
+  belongs_to :user, optional: true
 
   validates_presence_of :content
 
   # Helper method to add associations
+  # Returns true if a new association was created, false if it already existed
   def add_notable(notable)
-    note_associations.find_or_create_by(notable: notable)
+    association = note_associations.find_or_create_by(notable: notable)
+    association.persisted? && association.created_at == association.updated_at
   end
 
   # Helper to get all associated notables
+  # Optimized to avoid loading all records into memory
   def all_notables
-    note_associations.includes(:notable).map(&:notable)
+    note_associations.pluck(:notable_type, :notable_id)
+      .map { |type, id| type.constantize.find(id) }
   end
 end

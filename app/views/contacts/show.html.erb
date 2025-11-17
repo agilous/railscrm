@@ -300,6 +300,8 @@
   </div>
 </div>
 
+<%= render 'shared/note_modal' %>
+
 <style>
   .tab-button {
     border-color: transparent;
@@ -335,19 +337,7 @@
   }
   
   function showAddNoteModal() {
-    // This would open a modal for adding notes
-    // For now, we'll use a simple prompt
-    const content = prompt('Add a note:');
-    if (content) {
-      fetch('<%= contact_notes_path(@contact) %>', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ note: { content: content } })
-      }).then(() => window.location.reload());
-    }
+    showNoteModal();
   }
   
   function showScheduleActivityModal() {

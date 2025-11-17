@@ -55,77 +55,8 @@
       <div class="mt-2 flex items-center text-xs text-gray-500">
         <span><%= time_ago_in_words(note.created_at) %> ago</span>
         
-        <!-- Action buttons for managing associations -->
-        <div class="ml-auto flex space-x-2">
-          <button onclick="addAssociationModal(<%= note.id %>)" 
-                  class="text-blue-600 hover:text-blue-800"
-                  title="Link to another entity">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-            </svg>
-          </button>
-          
-          <% if note.note_associations.count > 1 %>
-            <button onclick="removeAssociationModal(<%= note.id %>, '<%= defined?(current_notable) ? "#{current_notable.class.name}-#{current_notable.id}" : "" %>')" 
-                    class="text-red-600 hover:text-red-800"
-                    title="Remove from this entity">
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-          <% end %>
-        </div>
       </div>
     </div>
   </div>
 </div>
 
-<script>
-  function addAssociationModal(noteId) {
-    // This would open a modal to add more associations
-    const entity = prompt('Enter entity type and ID (e.g., "Contact-5" or "Opportunity-10"):');
-    if (entity) {
-      const [type, id] = entity.split('-');
-      
-      fetch(`/notes/${noteId}/add_association`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ notable_type: type, notable_id: id })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          window.location.reload();
-        } else {
-          alert(data.message);
-        }
-      });
-    }
-  }
-  
-  function removeAssociationModal(noteId, currentNotable) {
-    if (confirm('Remove this note from the current view?')) {
-      const [type, id] = currentNotable.split('-');
-      
-      fetch(`/notes/${noteId}/remove_association`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ notable_type: type, notable_id: id })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          window.location.reload();
-        } else {
-          alert(data.message);
-        }
-      });
-    }
-  }
-</script>

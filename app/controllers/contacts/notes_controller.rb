@@ -3,7 +3,11 @@ class Contacts::NotesController < ApplicationController
   before_action :set_contact
 
   def create
-    @note = @contact.notes.build(note_params)
+    @note = Note.new(note_params)
+    @note.user = current_user
+
+    # Add contact association using multi-association system
+    @note.note_associations.build(notable: @contact)
 
     respond_to do |format|
       if @note.save
