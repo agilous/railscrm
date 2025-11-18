@@ -10,6 +10,10 @@ end
 
 APP_ROOT = File.expand_path('..', __dir__)
 Dir.chdir(APP_ROOT) do
+  terminal_message("Installing JavaScript dependencies...")
+  system("npm install --silent")
+  terminal_message("Done.\n\n")
+
   terminal_message("Building Tailwind CSS...")
   system("bundle exec rails tailwindcss:build")
   terminal_message("Done.\n\n")
@@ -18,8 +22,16 @@ Dir.chdir(APP_ROOT) do
   ruby_tests_passed = system("bundle exec rspec --format progress 2>/dev/null")
   terminal_message("Done.\n\n")
 
+  terminal_message("Running JavaScript Tests...")
+  js_tests_passed = system("npm test -- --silent 2>/dev/null")
+  terminal_message("Done.\n\n")
+
   terminal_message("Linting Ruby Code...")
   ruby_linting_passed = system("bundle exec rubocop --parallel")
+  terminal_message("Done.\n\n")
+
+  terminal_message("Linting JavaScript Code...")
+  js_linting_passed = system("npm run lint -- --quiet 2>/dev/null")
   terminal_message("Done.\n\n")
 
   terminal_message("Vulnerability Scanning...")
@@ -27,10 +39,12 @@ Dir.chdir(APP_ROOT) do
   terminal_message("Done.\n\n")
 
   pass_fail(ruby_tests_passed, "Ruby Tests")
+  pass_fail(js_tests_passed, "JavaScript Tests")
   pass_fail(ruby_linting_passed, "Ruby Linter")
+  pass_fail(js_linting_passed, "JavaScript Linter")
   pass_fail(vulnerability_scan_passed, "Vulnerability Scan")
 
-  if ruby_tests_passed && ruby_linting_passed && vulnerability_scan_passed
+  if ruby_tests_passed && js_tests_passed && ruby_linting_passed && js_linting_passed && vulnerability_scan_passed
     exit 0
   else
     exit 1

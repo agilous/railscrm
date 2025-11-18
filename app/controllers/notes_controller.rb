@@ -22,10 +22,16 @@ class NotesController < ApplicationController
         notable_id = parts[1]
 
         if notable_type.present? && notable_id.present?
-          @note.note_associations.build(
-            notable_type: notable_type,
-            notable_id: notable_id
-          )
+          # Validate that the notable type is a valid model
+          begin
+            notable_type.constantize
+            @note.note_associations.build(
+              notable_type: notable_type,
+              notable_id: notable_id
+            )
+          rescue NameError
+            # Skip invalid notable types
+          end
         end
       end
     end

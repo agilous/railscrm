@@ -57,7 +57,8 @@ RSpec.describe PipedriveSync do
       expect(sync).to receive(:sync_activities).ordered
       expect(sync).to receive(:sync_notes).ordered
 
-      expect { sync.sync_all }.to output(/Starting Pipedrive Sync/).to_stdout
+      # quiet_puts suppresses output in test environment
+      sync.sync_all
     end
   end
 

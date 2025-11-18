@@ -457,6 +457,19 @@ RSpec.describe 'Contacts CRUD', type: :system do
       expect(page).to have_content('Schedule Activity')
     end
 
+    it 'allows adding a note through the modal', js: true do
+      visit contact_path(contact)
+      click_button 'Add Note'
+
+      expect(page).to have_css('#noteModal', visible: true)
+      expect(page).to have_content('Add Note', wait: 2)
+
+      within('#noteModal') do
+        fill_in 'note_content', with: 'This is a test note for the contact'
+        expect(page).to have_field('note_content', with: 'This is a test note for the contact')
+      end
+    end
+
     it 'has clickable email and phone links' do
       visit contact_path(contact)
 

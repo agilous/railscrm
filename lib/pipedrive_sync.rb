@@ -27,7 +27,7 @@ class PipedriveSync
 
   # Main sync method
   def sync_all
-    puts "\n=== Starting Pipedrive Sync ==="
+    quiet_puts "\n=== Starting Pipedrive Sync ==="
 
     sync_users
     sync_organizations
@@ -36,12 +36,12 @@ class PipedriveSync
     sync_activities
     sync_notes
 
-    puts "\n=== Sync Complete ==="
+    quiet_puts "\n=== Sync Complete ==="
   end
 
   # Sync Pipedrive Users to Rails Users
   def sync_users
-    puts "\n--- Syncing Users ---"
+    quiet_puts "\n--- Syncing Users ---"
 
     response = self.class.get("/users",
       headers: @headers,
@@ -52,15 +52,15 @@ class PipedriveSync
       response["data"].each do |pipedrive_user|
         sync_user(pipedrive_user)
       end
-      puts "Synced #{response['data'].count} users"
+      quiet_puts "Synced #{response['data'].count} users"
     else
-      puts "Error fetching users: #{response['error']}" if response["error"]
+      quiet_puts "Error fetching users: #{response['error']}" if response["error"]
     end
   end
 
   # Sync Pipedrive Organizations to Rails Accounts
   def sync_organizations
-    puts "\n--- Syncing Organizations to Accounts ---"
+    quiet_puts "\n--- Syncing Organizations to Accounts ---"
 
     start = 0
     limit = 100
@@ -89,12 +89,12 @@ class PipedriveSync
       start += limit
     end
 
-    puts "Synced #{total_synced} organizations"
+    quiet_puts "Synced #{total_synced} organizations"
   end
 
   # Sync Pipedrive Persons to Rails Contacts
   def sync_persons
-    puts "\n--- Syncing Persons to Contacts ---"
+    quiet_puts "\n--- Syncing Persons to Contacts ---"
 
     start = 0
     limit = 100
@@ -123,12 +123,12 @@ class PipedriveSync
       start += limit
     end
 
-    puts "Synced #{total_synced} persons"
+    quiet_puts "Synced #{total_synced} persons"
   end
 
   # Sync Pipedrive Deals to Rails Opportunities
   def sync_deals
-    puts "\n--- Syncing Deals to Opportunities ---"
+    quiet_puts "\n--- Syncing Deals to Opportunities ---"
 
     start = 0
     limit = 100
@@ -157,12 +157,12 @@ class PipedriveSync
       start += limit
     end
 
-    puts "Synced #{total_synced} deals"
+    quiet_puts "Synced #{total_synced} deals"
   end
 
   # Sync Pipedrive Activities to Rails Tasks
   def sync_activities
-    puts "\n--- Syncing Activities to Tasks ---"
+    quiet_puts "\n--- Syncing Activities to Tasks ---"
 
     start = 0
     limit = 100
@@ -191,12 +191,12 @@ class PipedriveSync
       start += limit
     end
 
-    puts "Synced #{total_synced} activities"
+    quiet_puts "Synced #{total_synced} activities"
   end
 
   # Sync Pipedrive Notes
   def sync_notes
-    puts "\n--- Syncing Notes ---"
+    quiet_puts "\n--- Syncing Notes ---"
 
     start = 0
     limit = 100
@@ -225,10 +225,14 @@ class PipedriveSync
       start += limit
     end
 
-    puts "Synced #{total_synced} notes"
+    quiet_puts "Synced #{total_synced} notes"
   end
 
   private
+
+  def quiet_puts(message)
+    puts message unless Rails.env.test?
+  end
 
   def sync_user(pipedrive_user)
     user = User.find_by(email: pipedrive_user["email"])
@@ -244,9 +248,9 @@ class PipedriveSync
       )
 
       if user.save
-        puts "  Created user: #{user.email}"
+        quiet_puts "  Created user: #{user.email}"
       else
-        puts "  Failed to create user: #{pipedrive_user['email']} - #{user.errors.full_messages.join(', ')}"
+        quiet_puts "  Failed to create user: #{pipedrive_user['email']} - #{user.errors.full_messages.join(', ')}"
       end
     else
       # Update existing user
@@ -255,7 +259,7 @@ class PipedriveSync
         last_name: pipedrive_user["name"]&.split(" ")&.last || user.last_name,
         phone: pipedrive_user["phone"] || user.phone
       )
-        puts "  Updated user: #{user.email}"
+        quiet_puts "  Updated user: #{user.email}"
       end
     end
 
@@ -286,9 +290,9 @@ class PipedriveSync
           updated_at: original_updated
         )
 
-        puts "  Created account: #{account.name} (original date: #{original_created.strftime('%Y-%m-%d')})"
+        quiet_puts "  Created account: #{account.name} (original date: #{original_created.strftime('%Y-%m-%d')})"
       else
-        puts "  Failed to create account: #{org['name']} - #{account.errors.full_messages.join(', ')}"
+        quiet_puts "  Failed to create account: #{org['name']} - #{account.errors.full_messages.join(', ')}"
       end
     else
       # Update existing account
@@ -298,7 +302,7 @@ class PipedriveSync
         website: org["cc_email"] || account.website,
         address: org["address"] || account.address
       )
-        puts "  Updated account: #{account.name}"
+        quiet_puts "  Updated account: #{account.name}"
       end
     end
 
@@ -339,9 +343,9 @@ class PipedriveSync
             updated_at: original_updated
           )
 
-          puts "  Created contact: #{contact.email} (original date: #{original_created.strftime('%Y-%m-%d')})"
+          quiet_puts "  Created contact: #{contact.email} (original date: #{original_created.strftime('%Y-%m-%d')})"
         else
-          puts "  Failed to create contact: #{email} - #{contact.errors.full_messages.join(', ')}"
+          quiet_puts "  Failed to create contact: #{email} - #{contact.errors.full_messages.join(', ')}"
         end
       else
         # Update existing contact
@@ -351,7 +355,7 @@ class PipedriveSync
           phone: extract_primary_phone(person["phone"]) || contact.phone,
           company: get_organization_name(person["org_id"]) || contact.company
         )
-          puts "  Updated contact: #{contact.email}"
+          quiet_puts "  Updated contact: #{contact.email}"
         end
       end
 
@@ -388,9 +392,9 @@ class PipedriveSync
             updated_at: original_updated
           )
 
-          puts "  Created lead: #{lead.email} (original date: #{original_created.strftime('%Y-%m-%d')})"
+          quiet_puts "  Created lead: #{lead.email} (original date: #{original_created.strftime('%Y-%m-%d')})"
         else
-          puts "  Failed to create lead: #{email} - #{lead.errors.full_messages.join(', ')}"
+          quiet_puts "  Failed to create lead: #{email} - #{lead.errors.full_messages.join(', ')}"
         end
       elsif lead && assigned_user
         # Update existing lead
@@ -403,7 +407,7 @@ class PipedriveSync
           lead_owner: owner_email || lead.lead_owner,
           assigned_to: assigned_user
         )
-          puts "  Updated lead: #{lead.email}"
+          quiet_puts "  Updated lead: #{lead.email}"
         end
       end
 
@@ -419,7 +423,7 @@ class PipedriveSync
     )
 
     if existing_mapping
-      puts "  Deal #{deal['id']} already synced to Opportunity #{existing_mapping.rails_id}"
+      quiet_puts "  Deal #{deal['id']} already synced to Opportunity #{existing_mapping.rails_id}"
       return
     end
 
@@ -449,12 +453,12 @@ class PipedriveSync
         updated_at: original_updated
       )
 
-      puts "  Created opportunity: #{opportunity.opportunity_name} (ID: #{opportunity.id}, Pipedrive: #{deal['id']}, date: #{original_created.strftime('%Y-%m-%d')})"
+      quiet_puts "  Created opportunity: #{opportunity.opportunity_name} (ID: #{opportunity.id}, Pipedrive: #{deal['id']}, date: #{original_created.strftime('%Y-%m-%d')})"
 
       # Store the mapping
       store_pipedrive_mapping("Opportunity", deal["id"], opportunity.id)
     else
-      puts "  Failed to create opportunity for Pipedrive deal #{deal['id']}: #{deal['title']} - #{opportunity.errors.full_messages.join(', ')}"
+      quiet_puts "  Failed to create opportunity for Pipedrive deal #{deal['id']}: #{deal['title']} - #{opportunity.errors.full_messages.join(', ')}"
     end
   end
 
@@ -469,7 +473,7 @@ class PipedriveSync
     )
 
     if existing_mapping
-      puts "  Activity #{activity['id']} already synced to Task #{existing_mapping.rails_id}"
+      quiet_puts "  Activity #{activity['id']} already synced to Task #{existing_mapping.rails_id}"
       return
     end
 
@@ -493,12 +497,12 @@ class PipedriveSync
         updated_at: original_updated
       )
 
-      puts "  Created task: #{task.title} (ID: #{task.id}, Pipedrive: #{activity['id']}, date: #{original_created.strftime('%Y-%m-%d')})"
+      quiet_puts "  Created task: #{task.title} (ID: #{task.id}, Pipedrive: #{activity['id']}, date: #{original_created.strftime('%Y-%m-%d')})"
 
       # Store the mapping
       store_pipedrive_mapping("Task", activity["id"], task.id)
     else
-      puts "  Failed to create task for Pipedrive activity #{activity['id']}: #{activity['subject']} - #{task.errors.full_messages.join(', ')}"
+      quiet_puts "  Failed to create task for Pipedrive activity #{activity['id']}: #{activity['subject']} - #{task.errors.full_messages.join(', ')}"
     end
   end
 
@@ -510,7 +514,7 @@ class PipedriveSync
     notables = find_all_notables_for_note(note)
 
     if notables.empty?
-      puts "  Skipping note #{note['id']}: No associated entities found (deal_id: #{note['deal_id']}, person_id: #{note['person_id']}, org_id: #{note['org_id']})"
+      quiet_puts "  Skipping note #{note['id']}: No associated entities found (deal_id: #{note['deal_id']}, person_id: #{note['person_id']}, org_id: #{note['org_id']})"
       return
     end
 
@@ -538,22 +542,22 @@ class PipedriveSync
         # Create associations to all notables
         notables.each do |notable|
           rails_note.add_notable(notable)
-          puts "  Created note and attached to #{notable.class.name} ID: #{notable.id} (#{notable.respond_to?(:email) ? notable.email : notable.try(:name)})"
+          quiet_puts "  Created note and attached to #{notable.class.name} ID: #{notable.id} (#{notable.respond_to?(:email) ? notable.email : notable.try(:name)})"
         end
 
         # Store mapping
         store_pipedrive_mapping("Note", note["id"], rails_note.id)
       else
-        puts "  Failed to create note: #{rails_note.errors.full_messages.join(', ')}"
+        quiet_puts "  Failed to create note: #{rails_note.errors.full_messages.join(', ')}"
       end
     else
       # Note exists, just add any missing associations
       notables.each do |notable|
         was_created = rails_note.add_notable(notable)
         if was_created
-          puts "  Added existing note to #{notable.class.name} ID: #{notable.id}"
+          quiet_puts "  Added existing note to #{notable.class.name} ID: #{notable.id}"
         else
-          puts "  Note already associated with #{notable.class.name} ID: #{notable.id}"
+          quiet_puts "  Note already associated with #{notable.class.name} ID: #{notable.id}"
         end
       end
 

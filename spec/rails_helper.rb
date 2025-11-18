@@ -99,77 +99,30 @@ Shoulda::Matchers.configure do |config|
   end
 end
 
-# Capybara configuration with Selenium Chrome (cross-platform compatible)
-require 'selenium-webdriver'
+# Capybara configuration with Playwright
+require 'capybara-playwright-driver'
 
-# Helper method to find Chrome executable across platforms
-def find_chrome_executable
-  chrome_paths = [
-    '/usr/bin/chromium-browser',         # Linux (Chromium) - prioritize reliable option
-    '/snap/bin/chromium',                # Linux (Snap)
-    '/opt/google/chrome/google-chrome',  # Linux (Google Chrome direct path)
-    '/usr/bin/google-chrome-stable',     # Linux (Google Chrome stable)
-    '/usr/bin/google-chrome',            # Linux (Google Chrome symlink)
-    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', # macOS
-    '/Applications/Chromium.app/Contents/MacOS/Chromium'            # macOS Chromium
-  ]
+# Playwright automatically manages browser installations
 
-  chrome_paths.find { |path| File.executable?(path) }
+# Configure Playwright driver
+Capybara.register_driver :playwright do |app|
+  Capybara::Playwright::Driver.new(app,
+    browser_type: :chromium,
+    headless: ENV['SHOW_BROWSER'].nil?,
+    viewport: { width: 1920, height: 1080 }
+  )
 end
 
-# Configure Selenium Chrome driver with cross-platform support
-Capybara.register_driver :selenium_chrome_headless do |app|
-  options = Selenium::WebDriver::Chrome::Options.new
-  options.add_argument('--headless=new')
-  options.add_argument('--no-sandbox')
-  options.add_argument('--disable-dev-shm-usage')
-  options.add_argument('--disable-gpu')
-  options.add_argument('--remote-debugging-port=9222')
-
-  # Set Chrome binary path if found
-  chrome_path = find_chrome_executable
-  if chrome_path
-    options.binary = chrome_path
-  end
-
-  # OS-specific configuration to handle driver compatibility
-  case RUBY_PLATFORM
-  when /darwin/
-    # macOS: Use the system ChromeDriver which should match the installed Chrome
-    system_chromedriver = `which chromedriver`.strip
-
-    if system_chromedriver && !system_chromedriver.empty? && File.executable?(system_chromedriver)
-      # Use the system ChromeDriver
-      service = Selenium::WebDriver::Chrome::Service.new(path: system_chromedriver)
-      Capybara::Selenium::Driver.new(app,
-        browser: :chrome,
-        options: options,
-        service: service
-      )
-    else
-      # Fallback: Let Selenium manage the driver
-      Capybara::Selenium::Driver.new(app,
-        browser: :chrome,
-        options: options
-      )
-    end
-  when /linux/
-    # Linux: Standard configuration works well
-    Capybara::Selenium::Driver.new(app,
-      browser: :chrome,
-      options: options
-    )
-  else
-    # Default fallback
-    Capybara::Selenium::Driver.new(app,
-      browser: :chrome,
-      options: options
-    )
-  end
+Capybara.register_driver :playwright_headless do |app|
+  Capybara::Playwright::Driver.new(app,
+    browser_type: :chromium,
+    headless: true,
+    viewport: { width: 1920, height: 1080 }
+  )
 end
 
-# For JavaScript-enabled tests, use Selenium Chrome
-Capybara.javascript_driver = :selenium_chrome_headless
+# For JavaScript-enabled tests, use Playwright
+Capybara.javascript_driver = :playwright_headless
 # For non-JS tests, use the faster rack_test
 Capybara.default_driver = :rack_test
 
@@ -181,7 +134,7 @@ Capybara.server = :puma, { Silent: true }
 RSpec.configure do |config|
   config.before(:each, type: :system) do |example|
     if example.metadata[:js]
-      driven_by :selenium_chrome_headless
+      driven_by :playwright_headless
     end
   end
 
