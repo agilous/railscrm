@@ -15,6 +15,13 @@ FileUtils.chdir APP_ROOT do
   puts "== Installing dependencies =="
   system("bundle check") || system!("bundle install")
 
+  puts "\n== Installing Node.js dependencies =="
+  system!("npm install")
+
+  puts "\n== Installing Playwright and its dependencies =="
+  system!("npx playwright install")
+  system!("npx playwright install-deps")
+
   # puts "\n== Copying sample files =="
   # unless File.exist?("config/database.yml")
   #   FileUtils.cp "config/database.yml.sample", "config/database.yml"
