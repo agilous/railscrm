@@ -121,9 +121,16 @@ RSpec.describe 'Accounts', type: :request do
       }.to change(Account, :count).by(-1)
     end
 
-    it 'redirects back' do
+    it 'redirects to accounts index with success message' do
       delete account_path(account_to_delete)
-      expect(response).to have_http_status(:found)
+      expect(response).to redirect_to(accounts_path)
+      follow_redirect!
+      expect(response.body).to include("Account Deleted")
+    end
+
+    it 'returns 404 for non-existent account' do
+      delete account_path(id: 99999)
+      expect(response).to have_http_status(:not_found)
     end
   end
 end

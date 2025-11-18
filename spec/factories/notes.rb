@@ -2,19 +2,56 @@ FactoryBot.define do
   factory :note do
     content { "This is a test note with important information." }
 
-    # Default to lead as notable, but can be overridden
-    for_lead
+    # Notes no longer require a direct notable association due to the new multi-association system
+    # Use traits to add associations after creation if needed
 
+    trait :with_lead do
+      after(:create) do |note|
+        lead = create(:lead)
+        note.add_notable(lead)
+      end
+    end
+
+    trait :with_contact do
+      after(:create) do |note|
+        contact = create(:contact)
+        note.add_notable(contact)
+      end
+    end
+
+    trait :with_account do
+      after(:create) do |note|
+        account = create(:account)
+        note.add_notable(account)
+      end
+    end
+
+    trait :with_opportunity do
+      after(:create) do |note|
+        opportunity = create(:opportunity)
+        note.add_notable(opportunity)
+      end
+    end
+
+    trait :with_multiple_associations do
+      after(:create) do |note|
+        note.add_notable(create(:contact))
+        note.add_notable(create(:opportunity))
+        note.add_notable(create(:account))
+      end
+    end
+
+    # Traits for tests that need specific association types
     trait :for_lead do
-      association :notable, factory: :lead
+      # Empty trait - association is added in tests when needed
     end
 
     trait :for_contact do
-      association :notable, factory: :contact
+      # Empty trait - association is added in tests when needed
     end
 
     trait :for_account do
-      association :notable, factory: :account
+      # Empty trait - association is added in tests when needed
     end
 
     trait :short do

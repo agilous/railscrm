@@ -3,7 +3,8 @@ class Lead < ApplicationRecord
   # Include contact fields directly instead of inheriting from Contact
 
   belongs_to :assigned_to, class_name: "User"
-  has_many :notes, as: :notable
+  has_many :note_associations, as: :notable, dependent: :destroy
+  has_many :notes, through: :note_associations
   accepts_nested_attributes_for :notes, allow_destroy: true
 
   validates_presence_of :lead_owner

@@ -255,9 +255,29 @@ RSpec.describe 'Leads', type: :request do
       }.to change(Lead, :count).by(-1)
     end
 
-    it 'redirects to leads index' do
+    it 'redirects to leads index with success message' do
       delete lead_path(lead_to_delete)
       expect(response).to redirect_to(leads_path)
+      follow_redirect!
+      expect(response.body).to include("Lead Deleted")
+    end
+
+    it 'deletes associated note associations but keeps the notes' do
+      note = create(:note)
+      note.add_notable(lead_to_delete)
+
+      expect {
+        delete lead_path(lead_to_delete)
+      }.to change(Lead, :count).by(-1)
+
+      # Note still exists but association is removed
+      expect(Note.exists?(note.id)).to be true
+      expect(note.reload.leads).to be_empty
+    end
+
+    it 'returns 404 for non-existent lead' do
+      delete lead_path(id: 99999)
+      expect(response).to have_http_status(:not_found)
     end
   end
 

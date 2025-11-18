@@ -4,39 +4,56 @@ RSpec.describe Note, type: :model do
   subject(:note) { build(:note) }
 
   describe 'associations' do
-    it { is_expected.to belong_to(:notable) }
+    it { is_expected.to have_many(:note_associations).dependent(:destroy) }
+    it { is_expected.to have_many(:contacts).through(:note_associations) }
+    it { is_expected.to have_many(:leads).through(:note_associations) }
+    it { is_expected.to have_many(:accounts).through(:note_associations) }
+    it { is_expected.to have_many(:opportunities).through(:note_associations) }
   end
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:content) }
   end
 
-  describe 'polymorphic associations' do
-    it 'can belong to a lead' do
+  describe 'multi-associations' do
+    it 'can be associated with a lead' do
       lead = create(:lead)
-      note = create(:note, :for_lead, notable: lead)
+      note = create(:note)
+      note.add_notable(lead)
 
-      expect(note.notable).to eq(lead)
-      expect(note.notable_type).to eq('Lead')
-      expect(note.notable_id).to eq(lead.id)
+      expect(note.leads).to include(lead)
+      expect(lead.notes).to include(note)
     end
 
-    it 'can belong to a contact' do
+    it 'can be associated with a contact' do
       contact = create(:contact)
-      note = create(:note, :for_contact, notable: contact)
+      note = create(:note)
+      note.add_notable(contact)
 
-      expect(note.notable).to eq(contact)
-      expect(note.notable_type).to eq('Contact')
-      expect(note.notable_id).to eq(contact.id)
+      expect(note.contacts).to include(contact)
+      expect(contact.notes).to include(note)
     end
 
-    it 'can belong to an account' do
+    it 'can be associated with an account' do
       account = create(:account)
-      note = create(:note, :for_account, notable: account)
+      note = create(:note)
+      note.add_notable(account)
 
-      expect(note.notable).to eq(account)
-      expect(note.notable_type).to eq('Account')
-      expect(note.notable_id).to eq(account.id)
+      expect(note.accounts).to include(account)
+      expect(account.notes).to include(note)
+    end
+
+    it 'can be associated with multiple entities' do
+      lead = create(:lead)
+      contact = create(:contact)
+      account = create(:account)
+      note = create(:note)
+
+      note.add_notable(lead)
+      note.add_notable(contact)
+      note.add_notable(account)
+
+      expect(note.all_notables).to contain_exactly(lead, contact, account)
     end
   end
 
@@ -79,30 +96,37 @@ RSpec.describe Note, type: :model do
   end
 
   describe 'default factory behavior' do
-    it 'defaults to being associated with a lead' do
+    it 'creates a note without associations' do
       note = build(:note)
 
-      expect(note.notable).to be_a(Lead)
+      expect(note.note_associations).to be_empty
+      expect(note.all_notables).to be_empty
     end
   end
 
   describe 'factory traits' do
-    it 'for_lead trait creates note associated with lead' do
-      note = build(:note, :for_lead)
+    it 'for_lead trait creates note that can be associated with lead' do
+      lead = create(:lead)
+      note = create(:note, :for_lead)
+      note.add_notable(lead)
 
-      expect(note.notable).to be_a(Lead)
+      expect(note.leads).to include(lead)
     end
 
-    it 'for_contact trait creates note associated with contact' do
-      note = build(:note, :for_contact)
+    it 'for_contact trait creates note that can be associated with contact' do
+      contact = create(:contact)
+      note = create(:note, :for_contact)
+      note.add_notable(contact)
 
-      expect(note.notable).to be_a(Contact)
+      expect(note.contacts).to include(contact)
     end
 
-    it 'for_account trait creates note associated with account' do
-      note = build(:note, :for_account)
+    it 'for_account trait creates note that can be associated with account' do
+      account = create(:account)
+      note = create(:note, :for_account)
+      note.add_notable(account)
 
-      expect(note.notable).to be_a(Account)
+      expect(note.accounts).to include(account)
     end
   end
 end
