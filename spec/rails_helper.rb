@@ -101,15 +101,18 @@ end
 
 # Capybara configuration with Playwright
 require 'capybara-playwright-driver'
+require 'selenium-webdriver'
 
 # Playwright automatically manages browser installations
 
-# Configure Playwright driver
+# Configure Playwright driver with enhanced event handling
 Capybara.register_driver :playwright do |app|
   Capybara::Playwright::Driver.new(app,
     browser_type: :chromium,
     headless: ENV['SHOW_BROWSER'].nil?,
-    viewport: { width: 1920, height: 1080 }
+    viewport: { width: 1920, height: 1080 },
+    # Add a small delay to ensure Stimulus has time to connect
+    slowMo: 50
   )
 end
 
@@ -117,12 +120,25 @@ Capybara.register_driver :playwright_headless do |app|
   Capybara::Playwright::Driver.new(app,
     browser_type: :chromium,
     headless: true,
-    viewport: { width: 1920, height: 1080 }
+    viewport: { width: 1920, height: 1080 },
+    # Add a small delay to ensure Stimulus has time to connect
+    slowMo: 50
   )
 end
 
-# For JavaScript-enabled tests, use Playwright
-Capybara.javascript_driver = :playwright_headless
+# Register Selenium driver as an alternative
+Capybara.register_driver :selenium_chrome do |app|
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument('--headless=new') unless ENV['SHOW_BROWSER']
+  options.add_argument('--no-sandbox')
+  options.add_argument('--disable-dev-shm-usage')
+  options.add_argument('--window-size=1920,1080')
+
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
+end
+
+# For JavaScript-enabled tests, use Playwright by default (can be overridden)
+Capybara.javascript_driver = ENV['USE_SELENIUM'] ? :selenium_chrome : :playwright_headless
 # For non-JS tests, use the faster rack_test
 Capybara.default_driver = :rack_test
 

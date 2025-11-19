@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "Notes", type: :request do
   let(:user) { create(:approved_user) }
+  let(:other_user) { create(:approved_user) }
   let(:contact) { create(:contact) }
   let(:account) { create(:account) }
   let(:opportunity) { create(:opportunity) }
@@ -123,15 +124,58 @@ RSpec.describe "Notes", type: :request do
         expect(flash[:alert]).to eq("Failed to create note.")
       end
 
-      it "handles invalid notable IDs gracefully" do
+      it "ignores non-existent notable IDs" do
         expect {
           post notes_path, params: {
             note: {
-              content: "Note with invalid IDs",
-              notable_ids: [ "Contact-99999", "InvalidType-1" ]
+              content: "Note with non-existent IDs",
+              notable_ids: [ "Contact-99999", "Account-88888" ]
             }
           }
-        }.not_to change(Note, :count)
+        }.to change(Note, :count).by(1)
+
+        note = Note.last
+        expect(note.note_associations.count).to eq(0)
+      end
+
+      it "ignores invalid notable types" do
+        expect {
+          post notes_path, params: {
+            note: {
+              content: "Note with invalid type",
+              notable_ids: [ "InvalidType-1", "Contact-#{contact.id}" ]
+            }
+          }
+        }.to change(Note, :count).by(1)
+
+        note = Note.last
+        expect(note.note_associations.count).to eq(1)
+        expect(note.contacts).to include(contact)
+      end
+
+      it "skips records owned by other users" do
+        my_lead = create(:lead, assigned_to: user)
+        other_lead = create(:lead, assigned_to: other_user)
+
+        expect {
+          post notes_path, params: {
+            note: {
+              content: "Note trying to access other user's records",
+              notable_ids: [
+                "Contact-#{contact.id}",
+                "Lead-#{my_lead.id}",
+                "Lead-#{other_lead.id}"
+              ]
+            }
+          }
+        }.to change(Note, :count).by(1)
+
+        note = Note.last
+        # Contact and my_lead should be associated, but not other_lead
+        expect(note.note_associations.count).to eq(2)
+        expect(note.contacts).to include(contact)
+        expect(note.leads).to include(my_lead)
+        expect(note.leads).not_to include(other_lead)
       end
 
       it "returns JSON error when requested" do

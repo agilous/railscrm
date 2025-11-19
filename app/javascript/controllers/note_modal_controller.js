@@ -32,9 +32,7 @@ export default class extends Controller {
   }
 
   async submit(event) {
-    if (event) {
-      event.preventDefault()
-    }
+    event.preventDefault()
 
     const formData = new FormData(this.formTarget)
 
@@ -43,7 +41,6 @@ export default class extends Controller {
     const opportunityId = this.element.dataset.noteModalOpportunityId
     const accountId = this.element.dataset.noteModalAccountId
     const leadId = this.element.dataset.noteModalLeadId
-
 
     if (contactId) {
       formData.append('note[notable_ids][]', `Contact-${contactId}`)
@@ -54,7 +51,6 @@ export default class extends Controller {
     } else if (leadId) {
       formData.append('note[notable_ids][]', `Lead-${leadId}`)
     }
-
 
     try {
       // Get CSRF token - try multiple methods
@@ -77,7 +73,6 @@ export default class extends Controller {
         },
         body: formData
       })
-
 
       if (response.ok) {
         window.location.reload()

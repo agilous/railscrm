@@ -115,7 +115,8 @@ describe('NoteModalController', () => {
       const textarea = element.querySelector('textarea')
       textarea.value = 'Test note content'
 
-      await controller.submit()
+      const mockEvent = { preventDefault: jest.fn() }
+      await controller.submit(mockEvent)
 
       expect(fetchMock).toHaveBeenCalledWith('/notes', expect.objectContaining({
         method: 'POST',
@@ -130,7 +131,8 @@ describe('NoteModalController', () => {
     it('includes contact ID in form data when present', async () => {
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
-      await controller.submit()
+      const mockEvent = { preventDefault: jest.fn() }
+      await controller.submit(mockEvent)
 
       const formData = fetchMock.mock.calls[0][1].body
       expect(formData.get('note[notable_ids][]')).toBe('Contact-123')
@@ -142,7 +144,8 @@ describe('NoteModalController', () => {
 
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
-      await controller.submit()
+      const mockEvent = { preventDefault: jest.fn() }
+      await controller.submit(mockEvent)
 
       const formData = fetchMock.mock.calls[0][1].body
       expect(formData.get('note[notable_ids][]')).toBe('Opportunity-456')
@@ -151,7 +154,8 @@ describe('NoteModalController', () => {
     it('reloads page on successful submission', async () => {
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
-      await controller.submit()
+      const mockEvent = { preventDefault: jest.fn() }
+      await controller.submit(mockEvent)
 
       expect(window.location.reload).toHaveBeenCalled()
     })
@@ -166,7 +170,8 @@ describe('NoteModalController', () => {
       const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {})
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
-      await controller.submit()
+      const mockEvent = { preventDefault: jest.fn() }
+      await controller.submit(mockEvent)
 
       expect(alertSpy).toHaveBeenCalledWith('Failed to save note: 422')
       expect(window.location.reload).not.toHaveBeenCalled()
@@ -178,7 +183,8 @@ describe('NoteModalController', () => {
       const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {})
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
-      await controller.submit()
+      const mockEvent = { preventDefault: jest.fn() }
+      await controller.submit(mockEvent)
 
       expect(alertSpy).toHaveBeenCalledWith('An error occurred: Network error')
       expect(window.location.reload).not.toHaveBeenCalled()
@@ -195,7 +201,8 @@ describe('NoteModalController', () => {
       const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {})
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
-      await controller.submit()
+      const mockEvent = { preventDefault: jest.fn() }
+      await controller.submit(mockEvent)
 
       expect(alertSpy).toHaveBeenCalledWith('An error occurred: CSRF token not found')
       expect(fetchMock).not.toHaveBeenCalled()
@@ -213,7 +220,8 @@ describe('NoteModalController', () => {
 
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
-      await controller.submit()
+      const mockEvent = { preventDefault: jest.fn() }
+      await controller.submit(mockEvent)
 
       // Verify fetch was called with the fallback token
       expect(fetchMock).toHaveBeenCalled()

@@ -51,8 +51,7 @@
               <dt class="text-xs font-medium text-gray-500 uppercase">Company</dt>
               <dd class="mt-1 text-sm text-gray-900">
                 <% if @contact.company.present? %>
-                  <% account = Account.find_by(name: @contact.company) %>
-                  <% if account %>
+                  <% if account = contact_related_account %>
                     <%= link_to @contact.company, account_path(account), class: "text-blue-600 hover:text-blue-800" %>
                   <% else %>
                     <%= @contact.company %>

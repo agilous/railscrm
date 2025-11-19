@@ -22,13 +22,26 @@ class NotesController < ApplicationController
         notable_id = parts[1]
 
         if notable_type.present? && notable_id.present?
-          # Validate that the notable type is a valid model
+          # Validate that the notable type is a valid model and record exists
           begin
-            notable_type.constantize
-            @note.note_associations.build(
-              notable_type: notable_type,
-              notable_id: notable_id
-            )
+            klass = notable_type.constantize
+            # Check if the record exists and user has access
+            notable_record = klass.find_by(id: notable_id)
+
+            if notable_record
+              # Add authorization check based on model's user association
+              case notable_type
+              when "Lead"
+                next if notable_record.assigned_to_id.present? && notable_record.assigned_to_id != current_user.id
+              when "Task"
+                next if notable_record.assignee_id.present? && notable_record.assignee_id != current_user.id
+              end
+
+              @note.note_associations.build(
+                notable_type: notable_type,
+                notable_id: notable_id
+              )
+            end
           rescue NameError
             # Skip invalid notable types
           end

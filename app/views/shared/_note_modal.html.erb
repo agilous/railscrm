@@ -1,12 +1,9 @@
 <!-- Enhanced Note Creation Modal with Multi-Association Support -->
-<div id="noteModal" 
+<div id="noteModal"
      class="hidden fixed z-50 inset-0 overflow-y-auto"
      data-controller="note-modal"
      data-note-modal-target="modal"
-     <%= "data-note-modal-contact-id=#{@contact.id}" if defined?(@contact) && @contact&.persisted? %>
-     <%= "data-note-modal-opportunity-id=#{@opportunity.id}" if defined?(@opportunity) && @opportunity&.persisted? %>
-     <%= "data-note-modal-account-id=#{@account.id}" if defined?(@account) && @account&.persisted? %>
-     <%= "data-note-modal-lead-id=#{@lead.id}" if defined?(@lead) && @lead&.persisted? %>>
+     <%= note_modal_html_attributes %>>
   <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
     <!-- Background overlay -->
     <div class="fixed inset-0 bg-gray-500/75 transition-opacity" data-action="click->note-modal#close"></div>
@@ -77,21 +74,18 @@
                     <% end %>
                     
                     <!-- Related Account -->
-                    <% if @contact.company.present? %>
-                      <% account = Account.find_by(name: @contact.company) %>
-                      <% if account %>
+                    <% if account = contact_related_account %>
                         <div class="flex items-center hover:bg-gray-50 p-2 rounded">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             id="notable_account_<%= account.id %>"
-                            name="note[notable_ids][]" 
+                            name="note[notable_ids][]"
                             value="Account-<%= account.id %>"
                             class="mr-2 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                           <label for="notable_account_<%= account.id %>" class="text-sm text-gray-700 cursor-pointer flex-1">
                             <span class="font-medium">Company:</span> <%= account.name %>
                           </label>
                         </div>
-                      <% end %>
                     <% end %>
                     
                   <% elsif defined?(@opportunity) && @opportunity.persisted? %>
@@ -104,39 +98,33 @@
                     </div>
                     
                     <!-- Related Contact -->
-                    <% if @opportunity.contact_name.present? %>
-                      <% contact = Contact.find_by(email: @opportunity.contact_name) %>
-                      <% if contact %>
+                    <% if contact = opportunity_related_contact %>
                         <div class="flex items-center hover:bg-gray-50 p-2 rounded">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             id="notable_contact_<%= contact.id %>"
-                            name="note[notable_ids][]" 
+                            name="note[notable_ids][]"
                             value="Contact-<%= contact.id %>"
                             class="mr-2 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                           <label for="notable_contact_<%= contact.id %>" class="text-sm text-gray-700 cursor-pointer flex-1">
                             <span class="font-medium">Contact:</span> <%= contact.full_name %>
                           </label>
                         </div>
-                      <% end %>
                     <% end %>
                     
                     <!-- Related Account -->
-                    <% if @opportunity.account_name.present? %>
-                      <% account = Account.find_by(name: @opportunity.account_name) %>
-                      <% if account %>
+                    <% if account = opportunity_related_account %>
                         <div class="flex items-center hover:bg-gray-50 p-2 rounded">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             id="notable_account_<%= account.id %>"
-                            name="note[notable_ids][]" 
+                            name="note[notable_ids][]"
                             value="Account-<%= account.id %>"
                             class="mr-2 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                           <label for="notable_account_<%= account.id %>" class="text-sm text-gray-700 cursor-pointer flex-1">
                             <span class="font-medium">Account:</span> <%= account.name %>
                           </label>
                         </div>
-                      <% end %>
                     <% end %>
                   <% end %>
                   

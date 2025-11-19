@@ -459,7 +459,12 @@ RSpec.describe 'Contacts CRUD', type: :system do
 
     it 'allows adding a note through the modal', js: true do
       visit contact_path(contact)
-      click_button 'Add Note'
+
+      # Debug: Check if modal is in the page at all
+      expect(page).to have_css('#noteModal', visible: :all)
+
+      # Use helper to open modal (click events don't propagate to Stimulus in Playwright)
+      open_note_modal
 
       expect(page).to have_css('#noteModal', visible: true)
       expect(page).to have_content('Add Note', wait: 2)

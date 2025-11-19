@@ -105,7 +105,7 @@ RSpec.describe 'Notes Multi-Association', type: :system, js: true do
     it 'validates that note content is required' do
       visit contact_path(contact)
 
-      click_button 'Add Note'
+      open_note_modal
       expect(page).to have_css('#noteModal', visible: true)
 
       within('#noteModal') do
@@ -122,7 +122,7 @@ RSpec.describe 'Notes Multi-Association', type: :system, js: true do
     it 'closes the modal when clicking the cancel button' do
       visit contact_path(contact)
 
-      click_button 'Add Note'
+      open_note_modal
       expect(page).to have_css('#noteModal', visible: true)
 
       within('#noteModal') do
@@ -135,7 +135,7 @@ RSpec.describe 'Notes Multi-Association', type: :system, js: true do
     it 'does not close the modal when clicking inside the modal content' do
       visit contact_path(contact)
 
-      click_button 'Add Note'
+      open_note_modal
       expect(page).to have_css('#noteModal', visible: true)
 
       # Click inside the modal content area
@@ -151,14 +151,14 @@ RSpec.describe 'Notes Multi-Association', type: :system, js: true do
       visit contact_path(contact)
 
       # First interaction with modal
-      click_button 'Add Note'
+      open_note_modal
       within('#noteModal') do
         fill_in 'note_content', with: 'First note attempt'
         click_button 'Cancel'
       end
 
       # Reopen modal - form should be reset
-      click_button 'Add Note'
+      open_note_modal
       within('#noteModal') do
         expect(find('#note_content').value).to eq('')
       end

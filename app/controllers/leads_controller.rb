@@ -112,7 +112,7 @@ class LeadsController < ApplicationController
   private
 
   def set_lead
-    @lead = Lead.find(params[:id])
+    @lead = Lead.includes(notes: [ :user, :note_associations ]).find(params[:id])
   end
 
   def apply_sorting(scope)

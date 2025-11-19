@@ -22,8 +22,7 @@
       "^@hotwired/stimulus$": "<rootDir>/node_modules/@hotwired/stimulus"
     },
     "testMatch": [
-      "**/spec/javascript/**/*.spec.js",
-      "**/spec/javascript/**/*.test.js"
+      "**/spec/javascript/**/*.spec.js"
     ]
   }
 }
