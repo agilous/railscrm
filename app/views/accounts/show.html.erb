@@ -118,6 +118,61 @@
           </div>
         </div>
       </div>
+
+      <!-- Notes Section -->
+      <div class="bg-white shadow-sm rounded-lg mt-6">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Notes</h3>
+            <button onclick="window.openNoteModal && window.openNoteModal()" class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <svg class="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              Add Note
+            </button>
+          </div>
+
+          <% notes = @account.notes.includes(:user).order(created_at: :desc) %>
+          <% if notes.any? %>
+            <div class="space-y-4">
+              <% notes.each do |note| %>
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <p class="text-sm text-gray-900 whitespace-pre-wrap"><%= note.content %></p>
+                      <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                        <span>By <%= note.user&.full_name || 'Unknown' %></span>
+                        <span><%= time_ago_in_words(note.created_at) %> ago</span>
+                        <% other_associations = note.note_associations.includes(:notable).where.not(notable: @account) %>
+                        <% if other_associations.any? %>
+                          <span class="text-gray-400">•</span>
+                          <span>
+                            Also on: 
+                            <%= safe_join(other_associations.map do |assoc|
+                              notable = assoc.notable
+                              if notable.is_a?(Contact)
+                                link_to notable.full_name, contact_path(notable), class: "text-blue-600 hover:text-blue-800"
+                              elsif notable.is_a?(Opportunity)
+                                link_to notable.opportunity_name, opportunity_path(notable), class: "text-blue-600 hover:text-blue-800"
+                              elsif notable.is_a?(Lead)
+                                link_to notable.full_name, lead_path(notable), class: "text-blue-600 hover:text-blue-800"
+                              else
+                                notable.try(:name) || notable.class.name
+                              end
+                            end, ', ') %>
+                          </span>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-gray-500 text-center py-8">No notes yet. Add a note to get started.</p>
+          <% end %>
+        </div>
+      </div>
     </div>
 
     <!-- Quick Actions Section -->
@@ -208,3 +263,5 @@
     </div>
   </div>
 </div>
+
+<%= render 'shared/note_modal' %>

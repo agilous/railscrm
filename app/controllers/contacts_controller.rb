@@ -67,7 +67,7 @@ class ContactsController < ApplicationController
     @contact = Contact.includes(
       :activities,
       :deals,
-      notes: :note_associations
+      notes: [ :user, :note_associations ]
     ).find(params[:id])
   end
 

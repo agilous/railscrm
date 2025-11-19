@@ -125,6 +125,8 @@ GEM
     factory_bot_rails (6.5.1)
       factory_bot (~> 6.5)
       railties (>= 6.1.0)
+    foreman (0.90.0)
+      thor (~> 1.4)
     globalid (1.2.1)
       activesupport (>= 6.1)
     httparty (0.23.1)
@@ -412,6 +414,7 @@ DEPENDENCIES
   devise
   dotenv-rails
   factory_bot_rails
+  foreman
   httparty
   importmap-rails
   jbuilder
