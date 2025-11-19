@@ -26,11 +26,12 @@ This version maintains the core CRM functionality while leveraging modern Rails 
 
 - **Ruby** 3.2.1
 - **Rails** 8.0
+- **Node.js** 24.7.0
 - **Database** PostgreSQL
 - **Authentication** Devise
 - **Styling** Tailwind CSS
 - **JavaScript** Stimulus, Turbo
-- **Testing** RSpec, Capybara, Selenium WebDriver
+- **Testing** RSpec, Capybara, Playwright, Selenium WebDriver
 - **Pagination** Kaminari
 
 ## Prerequisites
@@ -57,20 +58,26 @@ sudo service postgresql start
 **Windows:**
 Download and install from https://www.postgresql.org/download/windows/
 
-### Ruby
+### asdf (Version Manager)
 
-This project uses Ruby 3.2.1. We recommend using a Ruby version manager:
+This project uses [asdf](https://asdf-vm.com/) to manage Ruby, Node.js, and Python versions. The required versions are specified in `.tool-versions`:
 
-**Using rbenv:**
+- Ruby 3.2.1
+- Node.js 24.7.0
+- Python 3.12.0
+
+**Install asdf:**
 ```bash
-rbenv install 3.2.1
-rbenv local 3.2.1
+# See https://asdf-vm.com/guide/getting-started.html for detailed instructions
+git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.0
 ```
 
-**Using RVM:**
+**Install required plugins and versions:**
 ```bash
-rvm install 3.2.1
-rvm use 3.2.1
+asdf plugin add ruby
+asdf plugin add nodejs
+asdf plugin add python
+asdf install  # Installs all versions from .tool-versions
 ```
 
 ## Installation
@@ -81,24 +88,22 @@ rvm use 3.2.1
    cd railscrm
    ```
 
-2. **Install dependencies**
+2. **Run the setup script**
    ```bash
-   gem install bundler
-   bundle install
+   ./bin/setup
    ```
 
-3. **Set up the database**
-   ```bash
-   rails db:create
-   rails db:migrate
-   ```
+   This script will:
+   - Install Ruby gem dependencies
+   - Install Node.js dependencies
+   - Install Playwright and its dependencies for testing
+   - Set up the database
+   - Clear logs and temporary files
+   - Start the development server
 
-4. **Start the Rails server**
-   ```bash
-   rails server
-   ```
+   **Note:** To run setup without starting the server, use `./bin/setup --skip-server`
 
-5. **Visit the application**
+3. **Visit the application**
 
    Go to `http://localhost:3000` and create your first user account.
 
@@ -168,8 +173,8 @@ bundle exec rspec spec/system
 ## Development
 
 ```bash
-# Start Rails server
-rails server
+# Start development server (runs Rails server + Tailwind CSS watcher)
+bin/dev
 
 # Open Rails console
 rails console
@@ -180,11 +185,8 @@ rails db:migrate
 # Reset database (caution: destroys all data)
 rails db:drop db:create db:migrate
 
-# Build Tailwind CSS
+# Build Tailwind CSS (for production)
 rails tailwindcss:build
-
-# Watch Tailwind CSS for changes
-rails tailwindcss:watch
 ```
 
 ## Key Features
