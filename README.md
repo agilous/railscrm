@@ -10,14 +10,11 @@ This modernized version includes significant upgrades:
 - **PostgreSQL** database (replacing MongoDB/Mongoid)
 - **Tailwind CSS** for modern, responsive UI (replacing Twitter Bootstrap)
 - **ERB templates** (replacing HAML)
-- **Pipedrive Integration** - Full bidirectional sync with Pipedrive CRM
 - **Multi-association Notes System** - Attach notes to any entity (Leads, Contacts, Opportunities, etc.)
 - **Comprehensive Test Suite** - RSpec, Capybara, and system tests
 - **Modern JavaScript** - Stimulus controllers and Turbo
 - **CI/CD Pipeline** - GitHub Actions for automated testing
 - **Enhanced CRUD Operations** - Modern styling and improved user experience
-
-See [PIPEDRIVE_SYNC.md](PIPEDRIVE_SYNC.md) for detailed Pipedrive integration documentation.
 
 ## About Rails CRM
 
@@ -34,7 +31,6 @@ This version maintains the core CRM functionality while leveraging modern Rails 
 - **Styling** Tailwind CSS
 - **JavaScript** Stimulus, Turbo
 - **Testing** RSpec, Capybara, Selenium WebDriver
-- **API Integration** HTTParty (for Pipedrive sync)
 - **Pagination** Kaminari
 
 ## Prerequisites
@@ -97,22 +93,12 @@ rvm use 3.2.1
    rails db:migrate
    ```
 
-4. **(Optional) Configure Pipedrive Integration**
-
-   If you want to sync with Pipedrive:
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your Pipedrive API credentials
-   ```
-
-   See [PIPEDRIVE_SYNC.md](PIPEDRIVE_SYNC.md) for detailed setup instructions.
-
-5. **Start the Rails server**
+4. **Start the Rails server**
    ```bash
    rails server
    ```
 
-6. **Visit the application**
+5. **Visit the application**
 
    Go to `http://localhost:3000` and create your first user account.
 
@@ -153,26 +139,16 @@ To use Web-to-Lead:
    - Click "Generate Form"
 4. Copy the generated HTML code and paste it on your website
 
-## Pipedrive Integration
+## Migrating from Pipedrive (Optional)
 
-This version includes comprehensive Pipedrive synchronization:
+If you're currently using Pipedrive and want to pilot Rails CRM, a one-way import tool is available to help you migrate your data. This allows you to evaluate Rails CRM with your existing data before deciding whether to make the switch.
 
 ```bash
-# Full sync of all data
+# Import all data from Pipedrive
 rails pipedrive:sync
-
-# Sync specific entities
-rails pipedrive:sync_users
-rails pipedrive:sync_organizations
-rails pipedrive:sync_persons
-rails pipedrive:sync_deals
-rails pipedrive:sync_activities
-
-# View sync statistics
-rails pipedrive:stats
 ```
 
-See [PIPEDRIVE_SYNC.md](PIPEDRIVE_SYNC.md) for complete documentation.
+**Note:** This is a one-way import designed for migration and evaluation purposes, not ongoing synchronization. See [PIPEDRIVE_SYNC.md](PIPEDRIVE_SYNC.md) for setup instructions.
 
 ## Testing
 
@@ -221,7 +197,6 @@ rails tailwindcss:watch
 - **Task Management** - Assign and track to-dos
 - **Notes System** - Attach notes to any entity (polymorphic associations)
 - **Web-to-Lead Forms** - Generate embeddable lead capture forms
-- **Pipedrive Sync** - Bidirectional synchronization with Pipedrive
 - **Modern UI** - Responsive design with Tailwind CSS
 - **Comprehensive Testing** - Full test coverage with RSpec
 
@@ -234,7 +209,7 @@ Key directories and files:
 - `app/views/` - ERB templates
 - `app/javascript/` - Stimulus controllers
 - `spec/` - RSpec test suite
-- `lib/pipedrive_sync.rb` - Pipedrive integration logic
+- `lib/pipedrive_sync.rb` - Optional Pipedrive import utility
 - `db/schema.rb` - Database schema
 
 ## Original Project
