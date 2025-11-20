@@ -32,7 +32,11 @@ Rails.application.routes.draw do
 
   resources :contacts do
     resources :notes
-    resources :activities
+    resources :activities do
+      member do
+        patch :complete
+      end
+    end
   end
 
   resources :accounts
