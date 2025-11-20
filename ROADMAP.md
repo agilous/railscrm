@@ -1,19 +1,19 @@
 # Rails CRM Development Roadmap
 
-This document outlines the future development roadmap for the Rails CRM application, including partially implemented features, planned enhancements, and integration opportunities. The roadmap prioritizes features that will provide the most value to users while building toward a complete CRM solution with Pipedrive integration.
+This document outlines the future development roadmap for the Rails CRM application, including partially implemented features, planned enhancements, and integration opportunities. The roadmap prioritizes features that will provide the most value to users while building toward a complete standalone CRM solution. Note: Pipedrive integration is designed for one-way migration to ease the transition from Pipedrive to Rails CRM, not for ongoing synchronization.
 
 ## Current Status & Immediate Priorities
 
 ### 1. Schedule Activity Functionality (HIGH PRIORITY)
 **Location**: Contact show page (`app/views/contacts/show.html.erb:347`)
 **Current State**: Button exists but shows alert message
-**Alert Message**: "Activity scheduling modal would appear here - this would create Activities which sync with Pipedrive"
+**Alert Message**: "Activity scheduling modal would appear here - this would create Activities for contact management"
 
 #### Implementation Requirements:
 
 **Frontend Components Needed:**
 - Activity scheduling modal with form fields:
-  - Activity type selection (Call, Meeting, Email, Demo, etc.)
+  - Activity type selection (Call, Meeting, Lunch, Coffee, Demo, Presentation)
   - Date and time picker
   - Duration selector
   - Description/notes textarea
@@ -28,18 +28,17 @@ This document outlines the future development roadmap for the Rails CRM applicat
 - Due date and reminder functionality
 - Email notifications to assignees
 
-**Pipedrive Integration:**
-- Map local activity types to Pipedrive activity types
-- Sync activity creation to Pipedrive API
-- Handle Pipedrive webhook updates
-- Bidirectional sync for activity modifications
-- Error handling and retry logic for API failures
+**Implementation Focus:**
+- Create standalone activity management system
+- Ensure data can be exported if needed
+- Focus on user experience within Rails CRM
+- No external API dependencies for core functionality
 
 **Database Considerations:**
 - The `Activity` model already exists with proper relationships
-- Add `pipedrive_id` field for sync tracking
 - Consider adding reminder and notification timestamps
-- Add sync status and error logging fields
+- Add status tracking for activity completion
+- Consider adding priority and category fields
 
 ### 2. Web-to-Lead Form Generation (HIGH PRIORITY)
 **Location**: Multiple components with partial implementation
@@ -123,15 +122,15 @@ end
 - Conversion preview and confirmation
 - Success messaging with links to created records
 
-**Integration Considerations:**
-- Sync converted records to Pipedrive
-- Map Lead → Person, Account → Organization in Pipedrive
-- Handle conversion conflicts and duplicates
-- Update Pipedrive lead status accordingly
+**Implementation Considerations:**
+- Ensure converted data maintains referential integrity
+- Handle duplicate detection and resolution
+- Preserve audit trail of conversion process
+- Support bulk conversion operations if needed
 
 ## Future Enhancement Opportunities
 
-### 3. Enhanced Email Integration (LOW-MEDIUM PRIORITY)
+### Enhanced Email Integration (LOW-MEDIUM PRIORITY)
 **Current State**: Basic mailto links
 **Enhancement Opportunities:**
 - Email template system
@@ -140,7 +139,7 @@ end
 - Integration with email service providers
 - Email activity logging
 
-### 4. Advanced Reporting and Analytics (LOW-MEDIUM PRIORITY)
+### Advanced Reporting and Analytics (LOW-MEDIUM PRIORITY)
 **Current State**: Basic CRUD operations
 **Enhancement Opportunities:**
 - Sales pipeline reporting
@@ -149,7 +148,7 @@ end
 - Revenue forecasting
 - Custom dashboard creation
 
-### 5. Mobile Responsiveness Improvements (LOW PRIORITY)
+### Mobile Responsiveness Improvements (LOW PRIORITY)
 **Current State**: Basic responsive design
 **Enhancement Opportunities:**
 - Mobile-optimized forms
@@ -163,7 +162,7 @@ end
 1. **Schedule Activity Functionality** - ~40-60 hours
    - Critical for daily CRM workflow
    - High user impact
-   - Core Pipedrive integration feature
+   - Core contact management feature
 
 2. **Web-to-Lead Form Generation** - ~15-25 hours
    - High marketing value for lead generation
@@ -177,28 +176,27 @@ end
    - Existing UI foundation
 
 ### Lower Priority (Future Iterations)
-3. **Email Integration Enhancements** - ~60-80 hours
-4. **Advanced Reporting** - ~40-60 hours
-5. **Mobile Improvements** - ~20-40 hours
+4. **Email Integration Enhancements** - ~60-80 hours
+5. **Advanced Reporting** - ~40-60 hours
+6. **Mobile Improvements** - ~20-40 hours
 
 ## Technical Considerations
 
-### Pipedrive API Integration
-- API rate limiting and quota management
-- Webhook endpoint security and validation
-- Error handling and retry strategies
-- Data mapping and field customization
-- Bulk operation support
+### Data Management and Export
+- One-way Pipedrive migration support (existing - see README.md)
+- Data export capabilities for portability
+- Backup and restore functionality
+- CSV/Excel export for reporting
 
 ### Performance Optimization
-- Background job processing for API calls
+- Background job processing for heavy operations
 - Caching strategies for frequently accessed data
 - Database indexing for filter operations
 - Pagination optimization for large datasets
 
 ### Testing Strategy
 - Comprehensive system specs (already implemented)
-- API integration testing with VCR/Webmock
+- External service testing with VCR/Webmock
 - Performance testing for large data sets
 - Mobile device testing
 - Cross-browser compatibility testing
@@ -215,7 +213,7 @@ end
 ### Phase 1: Schedule Activity (Sprint 1-2)
 1. Create activity scheduling modal component
 2. Implement activity CRUD operations
-3. Add Pipedrive API integration
+3. Add reminder and notification functionality
 4. Create comprehensive test coverage
 5. User acceptance testing
 
@@ -231,7 +229,7 @@ end
 1. Implement conversion business logic
 2. Add proper error handling and validation
 3. Enhance UI with better account selection
-4. Add Pipedrive sync for converted records
+4. Add audit trail and reporting features
 5. User acceptance testing
 
 ### Phase 4: Polish and Enhancement (Sprint 5+)
@@ -245,11 +243,13 @@ end
 
 The following comprehensive system specs have been created to test both existing functionality and future implementations:
 
-- **Leads Comprehensive Spec** (`spec/system/leads_comprehensive_spec.rb`) - 580+ lines
-- **Activities Schedule Spec** (`spec/system/activities_schedule_spec.rb`) - 280+ lines
-- **Opportunities Comprehensive Spec** (`spec/system/opportunities_comprehensive_spec.rb`) - 650+ lines
-- **Accounts Comprehensive Spec** (`spec/system/accounts_comprehensive_spec.rb`) - 700+ lines
-- **Tasks Comprehensive Spec** (`spec/system/tasks_comprehensive_spec.rb`) - 650+ lines
+- **Leads CRUD Spec** (`spec/system/leads_crud_spec.rb`) - 176 lines
+- **Contact Activity Scheduling Spec** (`spec/system/contact_activity_scheduling_spec.rb`) - 251 lines
+- **Opportunities CRUD Spec** (`spec/system/opportunities_crud_spec.rb`) - 202 lines
+- **Accounts CRUD Spec** (`spec/system/accounts_crud_spec.rb`) - 227 lines
+- **Tasks CRUD Spec** (`spec/system/tasks_crud_spec.rb`) - 246 lines
+- **Contacts CRUD Spec** (`spec/system/contacts_crud_spec.rb`) - 738 lines
+- **Notes Multi-Association Spec** (`spec/system/notes_multi_association_spec.rb`) - 167 lines
 
 These specs provide golden path testing for:
 - Complete CRUD operations

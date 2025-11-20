@@ -232,13 +232,14 @@ RSpec.describe 'Tasks CRUD', type: :system do
     it 'maintains form data when validation fails' do
       visit new_task_path
 
-      fill_in 'Title', with: 'Test Task'
+      # Leave title blank (required field) to trigger validation failure
       fill_in 'Description', with: 'Test description'
-      # Leave required fields blank if any
+      select user.email, from: 'Assignee'
 
       click_button 'Create Task'
 
-      expect(page).to have_field('Title', with: 'Test Task')
+      # Should stay on form page with validation errors
+      expect(page).to have_content("can't be blank")
       expect(page).to have_field('Description', with: 'Test description')
     end
   end

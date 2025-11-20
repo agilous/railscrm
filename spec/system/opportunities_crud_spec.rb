@@ -159,17 +159,18 @@ RSpec.describe 'Opportunities CRUD', type: :system do
   end
 
   describe 'Error handling and validation' do
-    it 'validates amount is numeric' do
+    it 'handles decimal amounts correctly' do
       visit new_opportunity_path
 
       fill_in 'Opportunity name', with: 'Test Deal'
       fill_in 'Account name', with: 'Test Account'
       fill_in 'Owner', with: user.email
-      fill_in 'Amount', with: 'not-a-number'
+      fill_in 'Amount', with: '15000.50'
 
       click_button 'Create Opportunity'
 
-      expect(page).to have_content('Amount').or have_content('invalid').or have_content('number')
+      expect(page).to have_content('Test Deal')
+      expect(page).to have_content('$15,000.50')
     end
 
     it 'handles very large amounts properly' do

@@ -186,12 +186,9 @@ RSpec.describe 'Accounts CRUD', type: :system do
 
   describe 'Error handling and edge cases' do
     it 'handles non-existent account gracefully' do
-      begin
-        visit account_path(99999)
-        expect(page).to have_content("Account").or have_content("Error").or have_current_path(accounts_path)
-      rescue ActiveRecord::RecordNotFound
-        expect(true).to be(true)
-      end
+      visit account_path(99999)
+      # Rails should handle this gracefully with a 404 page or redirect
+      expect(page).to have_content("Account").or have_content("Error").or have_current_path(accounts_path)
     end
 
     it 'handles missing optional fields gracefully' do
@@ -213,7 +210,7 @@ RSpec.describe 'Accounts CRUD', type: :system do
     end
 
     it 'validates unique account names' do
-      existing_account = create(:account, name: 'Existing Company')
+      create(:account, name: 'Existing Company')
 
       visit new_account_path
 

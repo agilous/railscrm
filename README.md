@@ -216,6 +216,17 @@ rails tailwindcss:build
 - **Modern UI** - Responsive design with Tailwind CSS
 - **Comprehensive Testing** - Full test coverage with RSpec
 
+## Development Roadmap
+
+Rails CRM has a comprehensive development roadmap that outlines planned features and implementation priorities. See [ROADMAP.md](ROADMAP.md) for:
+
+- **Immediate Priorities** - Schedule Activity functionality and Web-to-Lead form completion
+- **Implementation Phases** - Detailed sprint planning and effort estimates
+- **Technical Considerations** - Performance, security, and data management strategies
+- **Future Enhancements** - Email integration, reporting, and mobile improvements
+
+The roadmap prioritizes building a complete standalone CRM solution with optional one-way migration support from Pipedrive.
+
 ## Project Structure
 
 Key directories and files:

@@ -69,14 +69,14 @@ RSpec.describe 'Activity Scheduling (Stubbed Functionality)', type: :system do
 
       it 'displays activity status indicators' do
         # Create activities with different statuses
-        completed_activity = create(:activity,
+        create(:activity,
           contact: contact,
           activity_type: 'Meeting',
           title: 'Completed meeting',
           completed_at: 1.day.ago
         )
 
-        overdue_activity = create(:activity,
+        create(:activity,
           contact: contact,
           activity_type: 'Call',
           title: 'Overdue call',
@@ -136,7 +136,7 @@ RSpec.describe 'Activity Scheduling (Stubbed Functionality)', type: :system do
       end
 
       it 'shows activity details when activities exist' do
-        activity_with_details = create(:activity,
+        create(:activity,
           contact: contact,
           activity_type: 'Meeting',
           title: 'Project Kickoff',
@@ -152,7 +152,7 @@ RSpec.describe 'Activity Scheduling (Stubbed Functionality)', type: :system do
       end
 
       it 'handles completed vs pending activities' do
-        pending_activity = create(:activity,
+        create(:activity,
           contact: contact,
           activity_type: 'Call',
           title: 'Pending Call',
@@ -160,17 +160,17 @@ RSpec.describe 'Activity Scheduling (Stubbed Functionality)', type: :system do
           completed_at: nil
         )
 
-        completed_activity = create(:activity,
+        create(:activity,
           contact: contact,
-          activity_type: 'Email',
-          title: 'Sent Email',
+          activity_type: 'Demo',
+          title: 'Sent Demo',
           completed_at: 1.hour.ago
         )
 
         visit contact_path(contact)
 
         expect(page).to have_content('Pending Call')
-        expect(page).to have_content('Sent Email')
+        expect(page).to have_content('Sent Demo')
 
         # Should show different status indicators
         expect(page).to have_content('Done').or have_content('Completed').or have_content('Scheduled')
