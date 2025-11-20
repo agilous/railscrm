@@ -11,6 +11,7 @@ class User < ApplicationRecord
 
   # Associations
   has_many :leads, foreign_key: "assigned_to_id"
+  has_many :activities
 
   def full_name
     return first_name if last_name.blank?

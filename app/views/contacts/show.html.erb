@@ -309,6 +309,7 @@
 </div>
 
 <%= render 'shared/note_modal' %>
+<%= render 'shared/activity_modal' %>
 
 <style>
   .tab-button {
@@ -345,6 +346,8 @@
   }
   
   function showScheduleActivityModal() {
-    alert('Activity scheduling modal would appear here - this would create Activities which sync with Pipedrive');
+    if (typeof window.openActivityModal === 'function') {
+      window.openActivityModal();
+    }
   }
 </script>

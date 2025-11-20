@@ -9,3 +9,6 @@ application.register('hello', HelloController)
 
 import NoteModalController from './note_modal_controller'
 application.register('note-modal', NoteModalController)
+
+import ActivityModalController from './activity_modal_controller'
+application.register('activity-modal', ActivityModalController)
