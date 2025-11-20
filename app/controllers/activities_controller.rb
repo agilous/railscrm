@@ -8,6 +8,11 @@ class ActivitiesController < ApplicationController
   end
 
   def show
+    # Show action can respond to JSON or redirect to contact page
+    respond_to do |format|
+      format.html { redirect_to contact_path(@contact) }
+      format.json { render json: @activity }
+    end
   end
 
   def new
@@ -25,7 +30,7 @@ class ActivitiesController < ApplicationController
       end
     else
       respond_to do |format|
-        format.html { render :new, status: :unprocessable_entity }
+        format.html { redirect_to contact_path(@contact), alert: "Failed to schedule activity: #{@activity.errors.full_messages.join(', ')}" }
         format.json { render json: @activity.errors, status: :unprocessable_entity }
         format.turbo_stream { render turbo_stream: turbo_stream.replace("activity-form", partial: "activities/form", locals: { activity: @activity, contact: @contact }) }
       end
@@ -39,7 +44,7 @@ class ActivitiesController < ApplicationController
     if @activity.update(activity_params)
       redirect_to contact_path(@contact), notice: "Activity updated successfully."
     else
-      render :edit, status: :unprocessable_entity
+      redirect_to contact_path(@contact), alert: "Failed to update activity: #{@activity.errors.full_messages.join(', ')}"
     end
   end
 

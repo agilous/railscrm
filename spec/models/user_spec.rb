@@ -11,6 +11,7 @@ RSpec.describe User, type: :model do
 
   describe 'associations' do
     it { is_expected.to have_many(:leads).with_foreign_key(:assigned_to_id) }
+    it { is_expected.to have_many(:activities) }
   end
 
   describe '#full_name' do
