@@ -21,6 +21,7 @@ class ActivitiesController < ApplicationController
 
   def create
     @activity = @contact.activities.build(activity_params)
+    @activity.user = current_user unless @activity.user.present?
 
     if @activity.save
       respond_to do |format|

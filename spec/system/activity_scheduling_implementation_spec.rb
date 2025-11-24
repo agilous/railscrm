@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe 'Activity Scheduling Implementation', type: :system, driven_by: :rack_test do
+RSpec.describe 'Activity Scheduling Implementation', type: :system, js: true do
   let(:user) { create(:approved_user) }
   let!(:contact) { create(:contact, first_name: 'Alice', last_name: 'Johnson', email: 'alice@example.com') }
 
@@ -18,20 +18,26 @@ RSpec.describe 'Activity Scheduling Implementation', type: :system, driven_by: :
         # Count activities before
         initial_count = contact.activities.count
 
-        # In rack_test, we need to submit the form directly since JavaScript isn't available
-        # We'll test the route and controller directly
-        post contact_activities_path(contact), params: {
-          activity: {
-            activity_type: 'Call',
-            title: 'Follow up call',
-            description: 'Discuss project requirements',
-            due_date: 1.day.from_now,
-            priority: 'High',
-            duration: 30
-          }
-        }
+        # Click the Schedule Activity button
+        click_button 'Schedule Activity'
 
-        # Verify activity was created
+        # Fill out the activity form in the modal
+        select 'Call', from: 'activity_activity_type'
+        fill_in 'activity_title', with: 'Follow up call'
+        fill_in 'activity_description', with: 'Discuss project requirements'
+        select 'High', from: 'activity_priority'
+        fill_in 'activity_duration', with: '30'
+
+        # Submit the form
+        within '#activityModal' do
+          click_button 'Schedule Activity'
+        end
+
+        # Wait for the modal to close and verify activity was created
+        expect(page).to have_no_css('#activityModal:not(.hidden)', wait: 5)
+
+        # Reload contact to get updated activities count
+        contact.reload
         expect(contact.activities.count).to eq(initial_count + 1)
 
         # Verify activity attributes
@@ -44,30 +50,41 @@ RSpec.describe 'Activity Scheduling Implementation', type: :system, driven_by: :
       end
 
       it 'allows scheduling without optional fields' do
-        post contact_activities_path(contact), params: {
-          activity: {
-            activity_type: 'Meeting',
-            title: 'Quick sync'
-          }
-        }
+        visit contact_path(contact)
+
+        click_button 'Schedule Activity'
+
+        select 'Meeting', from: 'activity_activity_type'
+        fill_in 'activity_title', with: 'Quick sync'
+
+        within '#activityModal' do
+          click_button 'Schedule Activity'
+        end
+
+        expect(page).not_to have_css('#activityModal:not(.hidden)')
 
         activity = contact.activities.last
         expect(activity.activity_type).to eq('Meeting')
         expect(activity.title).to eq('Quick sync')
-        expect(activity.description).to be_nil
-        expect(activity.priority).to be_nil
+        expect(activity.description).to be_blank
+        expect(activity.priority).to eq('Medium')
       end
 
       it 'allows assigning activity to a user' do
         assignee = create(:approved_user)
+        visit contact_path(contact)
 
-        post contact_activities_path(contact), params: {
-          activity: {
-            activity_type: 'Demo',
-            title: 'Product demo',
-            user_id: assignee.id
-          }
-        }
+        click_button 'Schedule Activity'
+
+        select 'Demo', from: 'activity_activity_type'
+        fill_in 'activity_title', with: 'Product demo'
+        select assignee.full_name, from: 'activity_user_id'
+
+        within '#activityModal' do
+          click_button 'Schedule Activity'
+        end
+
+        expect(page).not_to have_css('#activityModal:not(.hidden)')
 
         activity = contact.activities.last
         expect(activity.user).to eq(assignee)
@@ -75,12 +92,17 @@ RSpec.describe 'Activity Scheduling Implementation', type: :system, driven_by: :
 
       it 'creates activities with different types' do
         Activity::ACTIVITY_TYPES.each do |type|
-          post contact_activities_path(contact), params: {
-            activity: {
-              activity_type: type,
-              title: "Test #{type}"
-            }
-          }
+          visit contact_path(contact)
+          click_button 'Schedule Activity'
+
+          select type, from: 'activity_activity_type'
+          fill_in 'activity_title', with: "Test #{type}"
+
+          within '#activityModal' do
+            click_button 'Schedule Activity'
+          end
+
+          expect(page).not_to have_css('#activityModal:not(.hidden)')
 
           activity = contact.activities.last
           expect(activity.activity_type).to eq(type)
@@ -90,13 +112,18 @@ RSpec.describe 'Activity Scheduling Implementation', type: :system, driven_by: :
 
       it 'creates activities with different priorities' do
         Activity::PRIORITY_LEVELS.each do |priority|
-          post contact_activities_path(contact), params: {
-            activity: {
-              activity_type: 'Call',
-              title: "#{priority} priority call",
-              priority: priority
-            }
-          }
+          visit contact_path(contact)
+          click_button 'Schedule Activity'
+
+          select 'Call', from: 'activity_activity_type'
+          fill_in 'activity_title', with: "#{priority} priority call"
+          select priority, from: 'activity_priority'
+
+          within '#activityModal' do
+            click_button 'Schedule Activity'
+          end
+
+          expect(page).not_to have_css('#activityModal:not(.hidden)')
 
           activity = contact.activities.last
           expect(activity.priority).to eq(priority)
@@ -266,7 +293,8 @@ RSpec.describe 'Activity Scheduling Implementation', type: :system, driven_by: :
         contact: contact,
         activity_type: 'Call',
         title: 'Pending call',
-        completed_at: nil
+        completed_at: nil,
+        due_date: 1.day.from_now
       )
     end
 
@@ -403,19 +431,19 @@ RSpec.describe 'Activity Scheduling Implementation', type: :system, driven_by: :
     let!(:overdue) { create(:activity, contact: contact, completed_at: nil, due_date: 1.day.ago) }
 
     it 'filters completed activities' do
-      expect(contact.activities.completed).to match_array([completed1, completed2])
+      expect(contact.activities.completed).to match_array([ completed1, completed2 ])
     end
 
     it 'filters pending activities' do
-      expect(contact.activities.pending).to match_array([pending1, pending2, overdue])
+      expect(contact.activities.pending).to match_array([ pending1, pending2, overdue ])
     end
 
     it 'filters upcoming activities' do
-      expect(contact.activities.upcoming).to match_array([pending1, pending2])
+      expect(contact.activities.upcoming).to match_array([ pending1, pending2 ])
     end
 
     it 'filters overdue activities' do
-      expect(contact.activities.overdue).to eq([overdue])
+      expect(contact.activities.overdue).to eq([ overdue ])
     end
 
     it 'orders activities by recent first' do

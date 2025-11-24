@@ -28,44 +28,12 @@ export default class extends Controller {
     }
   }
 
-  async submit(event) {
+  submit(event) {
     event.preventDefault()
 
     const form = this.formTarget
 
-    try {
-      // Get CSRF token
-      let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-
-      if (!csrfToken) {
-        csrfToken = document.querySelector('input[name="authenticity_token"]')?.value
-      }
-
-      if (!csrfToken) {
-        throw new Error('CSRF token not found')
-      }
-
-      const formData = new FormData(form)
-
-      const response = await fetch(form.action, {
-        method: 'POST',
-        headers: {
-          'X-CSRF-Token': csrfToken,
-          'Accept': 'application/json'
-        },
-        body: formData
-      })
-
-      if (response.ok) {
-        window.location.reload()
-      } else {
-        const errorText = await response.text()
-        console.error('Failed to save activity:', response.status, errorText)
-        alert(`Failed to save activity: ${response.status}`)
-      }
-    } catch (error) {
-      console.error('Error saving activity:', error)
-      alert(`An error occurred: ${error.message}`)
-    }
+    // Use native form submission which handles CSRF automatically
+    form.submit()
   }
 }
