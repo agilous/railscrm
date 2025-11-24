@@ -33,7 +33,7 @@ class ActivitiesController < ApplicationController
       respond_to do |format|
         format.html { redirect_to contact_path(@contact), alert: "Failed to schedule activity: #{@activity.errors.full_messages.join(', ')}" }
         format.json { render json: @activity.errors, status: :unprocessable_entity }
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("activity-form", partial: "activities/form", locals: { activity: @activity, contact: @contact }) }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("activity-form", partial: "shared/activity_modal", locals: { contact: @contact }) }
       end
     end
   end

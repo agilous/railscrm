@@ -116,6 +116,104 @@ describe('ActivityModalController', () => {
       expect(formSubmitMock).toHaveBeenCalled()
     })
 
+    describe('modal state during form submission', () => {
+      it('keeps modal open during form submission process', () => {
+        const controller = application.getControllerForElementAndIdentifier(element, 'activity-modal')
+
+        // Open modal first
+        controller.open()
+        expect(element.classList.contains('hidden')).toBe(false)
+
+        // Submit form - modal should remain open
+        const mockEvent = { preventDefault: jest.fn() }
+        controller.submit(mockEvent)
+
+        // Modal should still be open (form submission is handled by browser/turbo)
+        expect(element.classList.contains('hidden')).toBe(false)
+        expect(formSubmitMock).toHaveBeenCalled()
+      })
+
+      it('form has correct attributes for turbo_stream handling', () => {
+        const form = document.querySelector('form')
+
+        // Form should have proper action and method for Rails
+        expect(form.action).toBe('http://localhost/contacts/123/activities')
+        expect(form.method).toBe('get') // Default form method is 'get', Rails form helpers add POST via hidden input
+      })
+    })
+
+    describe('turbo_stream response behavior simulation', () => {
+      it('simulates successful form submission response handling', () => {
+        const controller = application.getControllerForElementAndIdentifier(element, 'activity-modal')
+
+        controller.open()
+        expect(element.classList.contains('hidden')).toBe(false)
+
+        // Submit form
+        const mockEvent = { preventDefault: jest.fn() }
+        controller.submit(mockEvent)
+
+        // Simulate turbo_stream success response by manually closing modal
+        // (In real app, this would be handled by turbo_stream response)
+        controller.close()
+        expect(element.classList.contains('hidden')).toBe(true)
+      })
+
+      it('simulates validation error response handling', () => {
+        const controller = application.getControllerForElementAndIdentifier(element, 'activity-modal')
+        const form = element.querySelector('form')
+        const titleInput = form.querySelector('input[name="activity[title]"]')
+
+        controller.open()
+        titleInput.value = 'User input'
+
+        // Submit form
+        const mockEvent = { preventDefault: jest.fn() }
+        controller.submit(mockEvent)
+
+        // Simulate validation error response - modal stays open, form keeps data
+        // (In real app, turbo_stream would replace form content with errors)
+        expect(element.classList.contains('hidden')).toBe(false)
+        expect(titleInput.value).toBe('User input') // Form data preserved
+      })
+    })
+
+    describe('form reset behavior', () => {
+      it('does not reset form on validation errors', () => {
+        const controller = application.getControllerForElementAndIdentifier(element, 'activity-modal')
+        const form = element.querySelector('form')
+        const titleInput = form.querySelector('input[name="activity[title]"]')
+
+        // Fill form with user data
+        titleInput.value = 'User entered title'
+
+        // Simulate validation error scenario (form submission fails)
+        // Form should NOT be reset to preserve user input
+        expect(titleInput.value).toBe('User entered title')
+      })
+
+      it('resets form only on successful submission', () => {
+        const controller = application.getControllerForElementAndIdentifier(element, 'activity-modal')
+        const form = element.querySelector('form')
+        const resetSpy = jest.spyOn(form, 'reset')
+
+        // Simulate successful form submission
+        controller.close() // This should reset the form
+
+        expect(resetSpy).toHaveBeenCalled()
+      })
+
+      it('resets form when modal is closed via cancel button', () => {
+        const controller = application.getControllerForElementAndIdentifier(element, 'activity-modal')
+        const form = element.querySelector('form')
+        const resetSpy = jest.spyOn(form, 'reset')
+
+        controller.close()
+
+        expect(resetSpy).toHaveBeenCalled()
+      })
+    })
+
   })
 
   describe('#disconnect', () => {

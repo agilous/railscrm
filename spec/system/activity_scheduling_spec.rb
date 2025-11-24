@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe 'Activity Scheduling Implementation', type: :system, js: true do
+RSpec.describe 'Activity Scheduling', type: :system, js: true do
   let(:user) { create(:approved_user) }
   let!(:contact) { create(:contact, first_name: 'Alice', last_name: 'Johnson', email: 'alice@example.com') }
 
@@ -15,32 +15,23 @@ RSpec.describe 'Activity Scheduling Implementation', type: :system, js: true do
 
         expect(page).to have_button('Schedule Activity')
 
-        # Count activities before
-        initial_count = contact.activities.count
-
-        # Click the Schedule Activity button
-        click_button 'Schedule Activity'
-
-        # Fill out the activity form in the modal
-        select 'Call', from: 'activity_activity_type'
-        fill_in 'activity_title', with: 'Follow up call'
-        fill_in 'activity_description', with: 'Discuss project requirements'
-        select 'High', from: 'activity_priority'
-        fill_in 'activity_duration', with: '30'
-
-        # Submit the form
-        within '#activityModal' do
+        expect {
           click_button 'Schedule Activity'
-        end
 
-        # Wait for the modal to close and verify activity was created
-        expect(page).to have_no_css('#activityModal:not(.hidden)', wait: 5)
+          select 'Call', from: 'activity_activity_type'
+          fill_in 'activity_title', with: 'Follow up call'
+          fill_in 'activity_description', with: 'Discuss project requirements'
+          select 'High', from: 'activity_priority'
+          fill_in 'activity_duration', with: '30'
 
-        # Reload contact to get updated activities count
-        contact.reload
-        expect(contact.activities.count).to eq(initial_count + 1)
+          within '#activityModal' do
+            click_button 'Schedule Activity'
+          end
 
-        # Verify activity attributes
+          # Wait for the modal to close and verify activity was created
+          expect(page).to have_no_css('#activityModal:not(.hidden)', wait: 5)
+        }.to change { contact.reload.activities.count }.by(1)
+
         activity = contact.activities.last
         expect(activity.activity_type).to eq('Call')
         expect(activity.title).to eq('Follow up call')
@@ -128,6 +119,55 @@ RSpec.describe 'Activity Scheduling Implementation', type: :system, js: true do
           activity = contact.activities.last
           expect(activity.priority).to eq(priority)
         end
+      end
+
+      it 'handles form submission and shows appropriate feedback', js: true do
+        visit contact_path(contact)
+
+        # Open the modal
+        click_button 'Schedule Activity'
+        expect(page).to have_css('#activityModal:not(.hidden)')
+
+        # Submit with missing required fields
+        within '#activityModal' do
+          # Leave required fields empty to potentially trigger validation
+          click_button 'Schedule Activity'
+        end
+
+        # Wait for form processing (may redirect or show errors)
+        sleep(1)
+
+        # The key test: no 500 error should occur due to missing template
+        expect(page).not_to have_content('Missing template')
+        expect(page).not_to have_content('ActionView::MissingTemplate')
+
+        # The form should either show errors or redirect - both are acceptable
+        # as long as no crash occurs
+      end
+
+      it 'does not crash on validation errors with turbo_stream', js: true do
+        visit contact_path(contact)
+
+        # Open modal
+        click_button 'Schedule Activity'
+
+        # Submit form with some but not all data
+        within '#activityModal' do
+          fill_in 'activity_title', with: 'Test Title'
+          # Leave activity_type empty which is required
+          click_button 'Schedule Activity'
+        end
+
+        # Wait for any turbo_stream response processing
+        sleep(1)
+
+        # Main test: page should not crash with missing template error
+        expect(page).not_to have_content('Missing template')
+        expect(page).not_to have_content('Internal Server Error')
+        expect(page).not_to have_content('ActionView::MissingTemplate')
+
+        # Should be on a valid page (either contact page or modal still open)
+        expect(page).to have_content(contact.full_name).or(have_css('#activityModal'))
       end
     end
 

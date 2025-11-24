@@ -131,6 +131,48 @@ RSpec.describe 'Activities', type: :request do
           expect(json_response).to have_key('title')
         end
       end
+
+      context 'with turbo_stream format' do
+        it 'handles validation errors without crashing on turbo_stream format' do
+          # Use completely invalid attributes to ensure validation fails
+          invalid_turbo_params = { activity: { activity_type: '', title: '' } }
+
+          # This should not raise an error even if turbo_stream response is malformed
+          expect {
+            post contact_activities_path(contact), params: invalid_turbo_params, as: :turbo_stream
+          }.not_to raise_error
+
+          # Should not return 500 error due to missing template (our bug fix)
+          expect(response).not_to have_http_status(:internal_server_error)
+
+          # Should not create an invalid activity
+          expect(Activity.count).to eq(0)
+        end
+
+        it 'renders turbo_stream response when validation fails' do
+          # Test that the turbo_stream format is handled (may redirect or render based on implementation)
+          invalid_turbo_params = { activity: { activity_type: '', title: '' } }
+
+          post contact_activities_path(contact), params: invalid_turbo_params, as: :turbo_stream
+
+          # The key is that it doesn't crash with a 500 error
+          expect(response.status).to be_between(200, 499)
+          expect(Activity.count).to eq(0) # No activity should be created
+        end
+
+        it 'documents the fixed bug - no template not found error' do
+          # Before our fix, this would have caused:
+          # ActionView::MissingTemplate: Missing template activities/form
+          # Now it should work without error
+          invalid_turbo_params = { activity: { activity_type: '', title: '' } }
+
+          expect {
+            post contact_activities_path(contact), params: invalid_turbo_params, as: :turbo_stream
+          }.not_to raise_error(ActionView::MissingTemplate)
+
+          expect(response).not_to have_http_status(:internal_server_error)
+        end
+      end
     end
 
     context 'with invalid priority' do

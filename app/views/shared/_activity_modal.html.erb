@@ -24,7 +24,7 @@
               Schedule Activity
             </h3>
 
-            <%= form_with(model: [@contact, Activity.new], id: "activityForm", class: "mt-4", data: { activity_modal_target: "form", action: "submit->activity-modal#submit" }) do |f| %>
+            <%= form_with(model: [@contact, Activity.new], id: "activity-form", class: "mt-4", data: { activity_modal_target: "form", action: "submit->activity-modal#submit" }) do |f| %>
               <!-- Activity Type -->
               <div class="mb-4">
                 <label for="activity_activity_type" class="block text-sm font-medium text-gray-700">
