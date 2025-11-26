@@ -1,8 +1,10 @@
 {
   "dependencies": {
-    "@anthropic-ai/claude-code": "^1.0.120"
+    "flatpickr": "^4.6.13",
+    "stimulus-flatpickr": "^1.4.0"
   },
   "devDependencies": {
+    "@anthropic-ai/claude-code": "^1.0.120",
     "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
     "@hotwired/stimulus": "^3.2.2",
@@ -12,8 +14,8 @@
     "jest-environment-jsdom": "^29.7.0"
   },
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "TZ=America/New_York jest",
+    "test:watch": "TZ=America/New_York jest --watch",
     "lint": "eslint app/javascript/**/*.js"
   },
   "jest": {
@@ -23,6 +25,9 @@
     },
     "testMatch": [
       "**/spec/javascript/**/*.spec.js"
+    ],
+    "setupFiles": [
+      "<rootDir>/spec/javascript/support/timezone.js"
     ]
   }
 }

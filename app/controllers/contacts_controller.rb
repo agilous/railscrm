@@ -28,6 +28,7 @@ class ContactsController < ApplicationController
   end
 
   def show
+    @users = User.order(:first_name, :last_name)
   end
 
   def create

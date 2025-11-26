@@ -58,6 +58,8 @@ jobs:
 
   test_js:
     runs-on: ubuntu-latest
+    env:
+      TZ: America/New_York
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -70,6 +72,11 @@ jobs:
 
       - name: Install JavaScript dependencies
         run: npm ci
+
+      - name: Set timezone
+        run: |
+          sudo timedatectl set-timezone America/New_York
+          echo "Current timezone: $(timedatectl | grep 'Time zone')"
 
       - name: Run Jest tests
         run: npm test
@@ -91,6 +98,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      TZ: America/New_York
 
     services:
       postgres:
@@ -111,6 +120,11 @@ jobs:
     steps:
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client
+
+      - name: Set timezone
+        run: |
+          sudo timedatectl set-timezone America/New_York
+          echo "Current timezone: $(timedatectl | grep 'Time zone')"
 
       - name: Checkout code
         uses: actions/checkout@v4

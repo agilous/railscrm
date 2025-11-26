@@ -1,0 +1,352 @@
+require 'rails_helper'
+
+RSpec.describe 'Activities', type: :request do
+  let(:user) { create(:approved_user) }
+  let(:contact) { create(:contact) }
+  let(:activity) { create(:activity, contact: contact) }
+
+  before do
+    sign_in user
+  end
+
+  describe 'GET /contacts/:contact_id/activities/:id' do
+    context 'with HTML format' do
+      it 'redirects to contact page' do
+        get contact_activity_path(contact, activity)
+        expect(response).to redirect_to(contact_path(contact))
+      end
+    end
+
+    context 'with JSON format' do
+      it 'returns the activity as JSON' do
+        get contact_activity_path(contact, activity), as: :json
+        expect(response).to have_http_status(:success)
+        json_response = JSON.parse(response.body)
+        expect(json_response['id']).to eq(activity.id)
+        expect(json_response['title']).to eq(activity.title)
+      end
+    end
+
+    it 'assigns @activity' do
+      get contact_activity_path(contact, activity), as: :json
+      expect(assigns(:activity)).to eq(activity)
+    end
+  end
+
+  describe 'POST /contacts/:contact_id/activities' do
+    context 'with valid parameters' do
+      let(:valid_attributes) do
+        {
+          activity: {
+            activity_type: 'Call',
+            title: 'Follow up call',
+            description: 'Discuss project requirements',
+            due_date: 1.day.from_now,
+            priority: 'High',
+            duration: 30,
+            user_id: user.id
+          }
+        }
+      end
+
+      it 'creates a new activity' do
+        expect {
+          post contact_activities_path(contact), params: valid_attributes
+        }.to change(Activity, :count).by(1)
+      end
+
+      it 'associates the activity with the contact' do
+        post contact_activities_path(contact), params: valid_attributes
+        expect(Activity.last.contact).to eq(contact)
+      end
+
+      it 'sets all activity attributes correctly' do
+        post contact_activities_path(contact), params: valid_attributes
+        activity = Activity.last
+        expect(activity.activity_type).to eq('Call')
+        expect(activity.title).to eq('Follow up call')
+        expect(activity.description).to eq('Discuss project requirements')
+        expect(activity.priority).to eq('High')
+        expect(activity.duration).to eq(30)
+        expect(activity.user_id).to eq(user.id)
+      end
+
+      it 'redirects to contact page with HTML format' do
+        post contact_activities_path(contact), params: valid_attributes
+        expect(response).to redirect_to(contact_path(contact))
+      end
+
+      it 'sets success flash message' do
+        post contact_activities_path(contact), params: valid_attributes
+        follow_redirect!
+        expect(flash[:notice]).to eq('Activity scheduled successfully.')
+      end
+
+      context 'with JSON format' do
+        it 'returns JSON response with created status' do
+          post contact_activities_path(contact), params: valid_attributes, as: :json
+          expect(response).to have_http_status(:created)
+          expect(response.content_type).to match(/application\/json/)
+        end
+
+        it 'returns the created activity as JSON' do
+          post contact_activities_path(contact), params: valid_attributes, as: :json
+          json_response = JSON.parse(response.body)
+          expect(json_response['title']).to eq('Follow up call')
+          expect(json_response['activity_type']).to eq('Call')
+        end
+      end
+
+      context 'with timezone parameter' do
+        it 'converts local time to UTC when timezone is provided' do
+          # User in New York submits 2024-01-15 09:00 (local time)
+          # This should be stored as 2024-01-15 14:00 UTC (5 hours ahead)
+          params_with_tz = valid_attributes.deep_merge(
+            activity: { due_date: '2024-01-15 09:00' }
+          ).merge(user_timezone: 'America/New_York')
+
+          post contact_activities_path(contact), params: params_with_tz
+
+          activity = Activity.last
+          expect(activity).to be_present
+
+          # The stored UTC time should be 5 hours ahead (14:00 UTC)
+          expect(activity.due_date.utc.hour).to eq(14)
+          expect(activity.due_date.utc.day).to eq(15)
+          expect(activity.due_date.utc.month).to eq(1)
+        end
+
+        it 'converts local time to UTC for different timezones' do
+          # User in Tokyo submits 2024-01-15 09:00 (local time)
+          # This should be stored as 2024-01-15 00:00 UTC (9 hours behind)
+          params_with_tz = valid_attributes.deep_merge(
+            activity: { due_date: '2024-01-15 09:00' }
+          ).merge(user_timezone: 'Asia/Tokyo')
+
+          post contact_activities_path(contact), params: params_with_tz
+
+          activity = Activity.last
+          expect(activity).to be_present
+
+          # The stored UTC time should be 9 hours behind (00:00 UTC)
+          expect(activity.due_date.utc.hour).to eq(0)
+          expect(activity.due_date.utc.day).to eq(15)
+        end
+
+        it 'handles invalid timezone gracefully' do
+          params_with_invalid_tz = valid_attributes.deep_merge(
+            activity: { due_date: '2024-01-15 09:00' }
+          ).merge(user_timezone: 'Invalid/Timezone')
+
+          expect {
+            post contact_activities_path(contact), params: params_with_invalid_tz
+          }.not_to raise_error
+
+          expect(response).to redirect_to(contact_path(contact))
+          activity = Activity.last
+          expect(activity).to be_present
+          # Should fall back to treating as UTC
+          expect(activity.due_date.hour).to eq(9)
+        end
+
+        it 'works without timezone parameter' do
+          # When no timezone is provided, time is treated as-is
+          params_without_tz = valid_attributes.deep_merge(
+            activity: { due_date: '2024-01-15 09:00' }
+          )
+
+          post contact_activities_path(contact), params: params_without_tz
+
+          activity = Activity.last
+          expect(activity).to be_present
+          expect(activity.due_date.hour).to eq(9)
+        end
+      end
+    end
+
+    context 'with invalid parameters' do
+      let(:invalid_attributes) do
+        {
+          activity: {
+            activity_type: '',
+            title: '',
+            description: 'Missing required fields'
+          }
+        }
+      end
+
+      it 'does not create a new activity' do
+        expect {
+          post contact_activities_path(contact), params: invalid_attributes
+        }.not_to change(Activity, :count)
+      end
+
+      it 'redirects back to contact page with error' do
+        post contact_activities_path(contact), params: invalid_attributes
+        expect(response).to redirect_to(contact_path(contact))
+        follow_redirect!
+        expect(flash[:alert]).to be_present
+      end
+
+      context 'with JSON format' do
+        it 'returns JSON with errors and unprocessable_entity status' do
+          post contact_activities_path(contact), params: invalid_attributes, as: :json
+          expect(response).to have_http_status(:unprocessable_entity)
+          json_response = JSON.parse(response.body)
+          expect(json_response).to have_key('activity_type')
+          expect(json_response).to have_key('title')
+        end
+      end
+    end
+
+    context 'with invalid priority' do
+      let(:invalid_priority_attributes) do
+        {
+          activity: {
+            activity_type: 'Call',
+            title: 'Test Activity',
+            priority: 'Invalid'
+          }
+        }
+      end
+
+      it 'does not create activity with invalid priority' do
+        expect {
+          post contact_activities_path(contact), params: invalid_priority_attributes, as: :json
+        }.not_to change(Activity, :count)
+      end
+    end
+
+    context 'with invalid activity_type' do
+      let(:invalid_type_attributes) do
+        {
+          activity: {
+            activity_type: 'InvalidType',
+            title: 'Test Activity'
+          }
+        }
+      end
+
+      it 'does not create activity with invalid type' do
+        expect {
+          post contact_activities_path(contact), params: invalid_type_attributes, as: :json
+        }.not_to change(Activity, :count)
+      end
+    end
+  end
+
+  describe 'PATCH /contacts/:contact_id/activities/:id' do
+    context 'with valid parameters' do
+      let(:new_attributes) do
+        {
+          activity: {
+            title: 'Updated Activity Title',
+            priority: 'Low',
+            description: 'Updated description'
+          }
+        }
+      end
+
+      it 'updates the activity' do
+        patch contact_activity_path(contact, activity), params: new_attributes
+        activity.reload
+        expect(activity.title).to eq('Updated Activity Title')
+        expect(activity.priority).to eq('Low')
+        expect(activity.description).to eq('Updated description')
+      end
+
+      it 'redirects to contact page' do
+        patch contact_activity_path(contact, activity), params: new_attributes
+        expect(response).to redirect_to(contact_path(contact))
+      end
+
+      it 'sets success flash message' do
+        patch contact_activity_path(contact, activity), params: new_attributes
+        follow_redirect!
+        expect(flash[:notice]).to eq('Activity updated successfully.')
+      end
+    end
+
+    context 'with invalid parameters' do
+      let(:invalid_attributes) do
+        {
+          activity: {
+            title: '',
+            activity_type: ''
+          }
+        }
+      end
+
+      it 'does not update the activity' do
+        original_title = activity.title
+        patch contact_activity_path(contact, activity), params: invalid_attributes
+        activity.reload
+        expect(activity.title).to eq(original_title)
+      end
+    end
+  end
+
+  describe 'DELETE /contacts/:contact_id/activities/:id' do
+    let!(:activity_to_delete) { create(:activity, contact: contact) }
+
+    it 'destroys the activity' do
+      expect {
+        delete contact_activity_path(contact, activity_to_delete)
+      }.to change(Activity, :count).by(-1)
+    end
+
+    it 'redirects to contact page with success message' do
+      delete contact_activity_path(contact, activity_to_delete)
+      expect(response).to redirect_to(contact_path(contact))
+      follow_redirect!
+      expect(flash[:notice]).to eq('Activity deleted successfully.')
+    end
+
+    it 'returns 404 for non-existent activity' do
+      delete contact_activity_path(contact, id: 99999)
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe 'PATCH /contacts/:contact_id/activities/:id/complete' do
+    let!(:pending_activity) { create(:activity, contact: contact, completed_at: nil) }
+
+    it 'marks the activity as completed' do
+      expect(pending_activity.completed_at).to be_nil
+      patch complete_contact_activity_path(contact, pending_activity)
+      pending_activity.reload
+      expect(pending_activity.completed_at).to be_present
+    end
+
+    it 'redirects to contact page' do
+      patch complete_contact_activity_path(contact, pending_activity)
+      expect(response).to redirect_to(contact_path(contact))
+    end
+
+    it 'sets success flash message' do
+      patch complete_contact_activity_path(contact, pending_activity)
+      follow_redirect!
+      expect(flash[:notice]).to eq('Activity marked as completed.')
+    end
+  end
+
+  describe 'authorization and scope' do
+    let(:other_contact) { create(:contact) }
+    let(:other_activity) { create(:activity, contact: other_contact) }
+
+    it 'returns 404 when accessing activities from different contact via JSON' do
+      get contact_activity_path(contact, other_activity), as: :json
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'returns 404 when updating activities from different contact' do
+      patch contact_activity_path(contact, other_activity), params: { activity: { title: 'Hacked' } }
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'returns 404 when deleting activities from different contact' do
+      delete contact_activity_path(contact, other_activity)
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+end

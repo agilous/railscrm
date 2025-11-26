@@ -168,6 +168,7 @@ describe('NoteModalController', () => {
       })
 
       const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {})
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
       const mockEvent = { preventDefault: jest.fn() }
@@ -175,12 +176,15 @@ describe('NoteModalController', () => {
 
       expect(alertSpy).toHaveBeenCalledWith('Failed to save note: 422')
       expect(window.location.reload).not.toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
     })
 
     it('handles network errors', async () => {
       fetchMock.mockRejectedValueOnce(new Error('Network error'))
 
       const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {})
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
       const mockEvent = { preventDefault: jest.fn() }
@@ -188,6 +192,8 @@ describe('NoteModalController', () => {
 
       expect(alertSpy).toHaveBeenCalledWith('An error occurred: Network error')
       expect(window.location.reload).not.toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
     })
 
     it('handles missing CSRF token', async () => {
@@ -199,6 +205,7 @@ describe('NoteModalController', () => {
       authTokens.forEach(token => token.remove())
 
       const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {})
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
       const controller = application.getControllerForElementAndIdentifier(element, 'note-modal')
 
       const mockEvent = { preventDefault: jest.fn() }
@@ -206,6 +213,8 @@ describe('NoteModalController', () => {
 
       expect(alertSpy).toHaveBeenCalledWith('An error occurred: CSRF token not found')
       expect(fetchMock).not.toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
     })
 
     it('tries authenticity token as fallback for CSRF', async () => {

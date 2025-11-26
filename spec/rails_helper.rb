@@ -151,6 +151,8 @@ RSpec.configure do |config|
   config.before(:each, type: :system) do |example|
     if example.metadata[:js]
       driven_by :playwright_headless
+    else
+      driven_by :rack_test
     end
   end
 

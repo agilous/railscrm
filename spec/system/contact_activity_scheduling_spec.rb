@@ -34,7 +34,8 @@ RSpec.describe 'Activity Scheduling (Stubbed Functionality)', type: :system do
       it 'has proper styling and accessibility' do
         visit contact_path(contact)
 
-        schedule_button = find('button', text: 'Schedule Activity')
+        # Find the Schedule Activity button in Quick Actions (not the modal submit button)
+        schedule_button = find('button[onclick*="showScheduleActivityModal"]')
 
         # Check for proper styling classes
         expect(schedule_button[:class]).to include('text-gray-700')
@@ -214,7 +215,7 @@ RSpec.describe 'Activity Scheduling (Stubbed Functionality)', type: :system do
       expect(page).to have_content('Quick Actions')
 
       # Schedule Activity button is prominently placed
-      schedule_button = find('button', text: 'Schedule Activity')
+      schedule_button = find('button[onclick*="showScheduleActivityModal"]')
       expect(schedule_button).to be_present
 
       # Button has appropriate icon for visual clarity
@@ -238,7 +239,7 @@ RSpec.describe 'Activity Scheduling (Stubbed Functionality)', type: :system do
 
       # All quick action buttons should have similar styling
       add_note_button = find('button', text: 'Add Note')
-      schedule_button = find('button', text: 'Schedule Activity')
+      schedule_button = find('button[onclick*="showScheduleActivityModal"]')
 
       # Both should have similar base classes
       expect(add_note_button[:class]).to include('text-gray-700')
