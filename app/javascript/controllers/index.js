@@ -12,3 +12,6 @@ application.register('note-modal', NoteModalController)
 
 import ActivityModalController from './activity_modal_controller'
 application.register('activity-modal', ActivityModalController)
+
+import DatetimePickerController from './datetime_picker_controller'
+application.register('datetime-picker', DatetimePickerController)

@@ -180,7 +180,6 @@ describe('ActivityModalController', () => {
 
     describe('form reset behavior', () => {
       it('does not reset form on validation errors', () => {
-        const controller = application.getControllerForElementAndIdentifier(element, 'activity-modal')
         const form = element.querySelector('form')
         const titleInput = form.querySelector('input[name="activity[title]"]')
 

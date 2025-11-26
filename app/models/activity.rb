@@ -1,13 +1,13 @@
 class Activity < ApplicationRecord
+  ACTIVITY_TYPES = [ "Call", "Meeting", "Lunch", "Coffee", "Demo", "Presentation" ]
+  PRIORITY_LEVELS = [ "Low", "Medium", "High" ]
+
   belongs_to :contact
   belongs_to :user, optional: true
 
   validates_presence_of :activity_type, :title
-  validates :activity_type, inclusion: { in: ->(_) { ACTIVITY_TYPES } }
+  validates :activity_type, inclusion: { in: ACTIVITY_TYPES }
   validates :priority, inclusion: { in: %w[Low Medium High], allow_blank: true }
-
-  ACTIVITY_TYPES = [ "Call", "Meeting", "Lunch", "Coffee", "Demo", "Presentation" ]
-  PRIORITY_LEVELS = [ "Low", "Medium", "High" ]
 
   scope :completed, -> { where.not(completed_at: nil) }
   scope :pending, -> { where(completed_at: nil) }

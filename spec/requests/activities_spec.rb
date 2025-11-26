@@ -96,6 +96,72 @@ RSpec.describe 'Activities', type: :request do
           expect(json_response['activity_type']).to eq('Call')
         end
       end
+
+      context 'with timezone parameter' do
+        it 'converts local time to UTC when timezone is provided' do
+          # User in New York submits 2024-01-15 09:00 (local time)
+          # This should be stored as 2024-01-15 14:00 UTC (5 hours ahead)
+          params_with_tz = valid_attributes.deep_merge(
+            activity: { due_date: '2024-01-15 09:00' }
+          ).merge(user_timezone: 'America/New_York')
+
+          post contact_activities_path(contact), params: params_with_tz
+
+          activity = Activity.last
+          expect(activity).to be_present
+
+          # The stored UTC time should be 5 hours ahead (14:00 UTC)
+          expect(activity.due_date.utc.hour).to eq(14)
+          expect(activity.due_date.utc.day).to eq(15)
+          expect(activity.due_date.utc.month).to eq(1)
+        end
+
+        it 'converts local time to UTC for different timezones' do
+          # User in Tokyo submits 2024-01-15 09:00 (local time)
+          # This should be stored as 2024-01-15 00:00 UTC (9 hours behind)
+          params_with_tz = valid_attributes.deep_merge(
+            activity: { due_date: '2024-01-15 09:00' }
+          ).merge(user_timezone: 'Asia/Tokyo')
+
+          post contact_activities_path(contact), params: params_with_tz
+
+          activity = Activity.last
+          expect(activity).to be_present
+
+          # The stored UTC time should be 9 hours behind (00:00 UTC)
+          expect(activity.due_date.utc.hour).to eq(0)
+          expect(activity.due_date.utc.day).to eq(15)
+        end
+
+        it 'handles invalid timezone gracefully' do
+          params_with_invalid_tz = valid_attributes.deep_merge(
+            activity: { due_date: '2024-01-15 09:00' }
+          ).merge(user_timezone: 'Invalid/Timezone')
+
+          expect {
+            post contact_activities_path(contact), params: params_with_invalid_tz
+          }.not_to raise_error
+
+          expect(response).to redirect_to(contact_path(contact))
+          activity = Activity.last
+          expect(activity).to be_present
+          # Should fall back to treating as UTC
+          expect(activity.due_date.hour).to eq(9)
+        end
+
+        it 'works without timezone parameter' do
+          # When no timezone is provided, time is treated as-is
+          params_without_tz = valid_attributes.deep_merge(
+            activity: { due_date: '2024-01-15 09:00' }
+          )
+
+          post contact_activities_path(contact), params: params_without_tz
+
+          activity = Activity.last
+          expect(activity).to be_present
+          expect(activity.due_date.hour).to eq(9)
+        end
+      end
     end
 
     context 'with invalid parameters' do
@@ -129,48 +195,6 @@ RSpec.describe 'Activities', type: :request do
           json_response = JSON.parse(response.body)
           expect(json_response).to have_key('activity_type')
           expect(json_response).to have_key('title')
-        end
-      end
-
-      context 'with turbo_stream format' do
-        it 'handles validation errors without crashing on turbo_stream format' do
-          # Use completely invalid attributes to ensure validation fails
-          invalid_turbo_params = { activity: { activity_type: '', title: '' } }
-
-          # This should not raise an error even if turbo_stream response is malformed
-          expect {
-            post contact_activities_path(contact), params: invalid_turbo_params, as: :turbo_stream
-          }.not_to raise_error
-
-          # Should not return 500 error due to missing template (our bug fix)
-          expect(response).not_to have_http_status(:internal_server_error)
-
-          # Should not create an invalid activity
-          expect(Activity.count).to eq(0)
-        end
-
-        it 'renders turbo_stream response when validation fails' do
-          # Test that the turbo_stream format is handled (may redirect or render based on implementation)
-          invalid_turbo_params = { activity: { activity_type: '', title: '' } }
-
-          post contact_activities_path(contact), params: invalid_turbo_params, as: :turbo_stream
-
-          # The key is that it doesn't crash with a 500 error
-          expect(response.status).to be_between(200, 499)
-          expect(Activity.count).to eq(0) # No activity should be created
-        end
-
-        it 'documents the fixed bug - no template not found error' do
-          # Before our fix, this would have caused:
-          # ActionView::MissingTemplate: Missing template activities/form
-          # Now it should work without error
-          invalid_turbo_params = { activity: { activity_type: '', title: '' } }
-
-          expect {
-            post contact_activities_path(contact), params: invalid_turbo_params, as: :turbo_stream
-          }.not_to raise_error(ActionView::MissingTemplate)
-
-          expect(response).not_to have_http_status(:internal_server_error)
         end
       end
     end

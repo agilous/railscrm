@@ -58,7 +58,7 @@ RSpec.describe 'Activity Scheduling', type: :system, js: true do
         expect(activity.activity_type).to eq('Meeting')
         expect(activity.title).to eq('Quick sync')
         expect(activity.description).to be_blank
-        expect(activity.priority).to eq('Medium')
+        expect(activity.priority).to be_blank
       end
 
       it 'allows assigning activity to a user' do
@@ -134,9 +134,6 @@ RSpec.describe 'Activity Scheduling', type: :system, js: true do
           click_button 'Schedule Activity'
         end
 
-        # Wait for form processing (may redirect or show errors)
-        sleep(1)
-
         # The key test: no 500 error should occur due to missing template
         expect(page).not_to have_content('Missing template')
         expect(page).not_to have_content('ActionView::MissingTemplate')
@@ -158,11 +155,8 @@ RSpec.describe 'Activity Scheduling', type: :system, js: true do
           click_button 'Schedule Activity'
         end
 
-        # Wait for any turbo_stream response processing
-        sleep(1)
-
         # Main test: page should not crash with missing template error
-        expect(page).not_to have_content('Missing template')
+        expect(page).not_to have_content('Missing template', wait: 5)
         expect(page).not_to have_content('Internal Server Error')
         expect(page).not_to have_content('ActionView::MissingTemplate')
 

@@ -23,6 +23,19 @@ class ActivitiesController < ApplicationController
     @activity = @contact.activities.build(activity_params)
     @activity.user = current_user unless @activity.user.present?
 
+    # Handle timezone conversion if provided
+    if params[:user_timezone].present? && @activity.due_date.present?
+      begin
+        # Parse the date in the user's timezone and convert to UTC for storage
+        tz = TZInfo::Timezone.get(params[:user_timezone])
+        local_time = Time.parse(@activity.due_date.to_s)
+        @activity.due_date = tz.local_to_utc(local_time)
+      rescue => e
+        Rails.logger.warn "Timezone conversion failed: #{e.message}"
+        # Fall back to treating it as UTC if timezone conversion fails
+      end
+    end
+
     if @activity.save
       respond_to do |format|
         format.html { redirect_to contact_path(@contact), notice: "Activity scheduled successfully." }
@@ -33,7 +46,6 @@ class ActivitiesController < ApplicationController
       respond_to do |format|
         format.html { redirect_to contact_path(@contact), alert: "Failed to schedule activity: #{@activity.errors.full_messages.join(', ')}" }
         format.json { render json: @activity.errors, status: :unprocessable_entity }
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("activity-form", partial: "shared/activity_modal", locals: { contact: @contact }) }
       end
     end
   end
