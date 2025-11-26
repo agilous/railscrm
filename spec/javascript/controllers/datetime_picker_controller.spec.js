@@ -125,7 +125,8 @@ describe('DatetimePickerController', () => {
       const timezone = element.dataset.timezone
 
       expect(timezone).toBeDefined()
-      expect(timezone).toMatch(/^[A-Za-z]+\/[A-Za-z_]+$/) // Basic timezone format check
+      // Match both "America/New_York" format and "UTC"/"GMT" format
+      expect(timezone).toMatch(/^([A-Za-z]+\/[A-Za-z_]+|[A-Z]{3,4})$/)
     })
 
     it('displays timezone to user if timezone target exists', () => {
@@ -217,6 +218,50 @@ describe('DatetimePickerController', () => {
       const expectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
       expect(detectedTimezone).toBe(expectedTimezone)
+    })
+
+    describe('with different timezones', () => {
+      afterEach(() => {
+        // Restore default timezone after each test
+        global.restoreTimezone()
+      })
+
+      it('can mock US West Coast timezone', () => {
+        // Mock West Coast timezone
+        global.mockTimezone('America/Los_Angeles')
+
+        // Check that our mock is working
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        expect(timezone).toBe('America/Los_Angeles')
+      })
+
+      it('can mock Tokyo timezone', () => {
+        // Mock Tokyo timezone
+        global.mockTimezone('Asia/Tokyo')
+
+        // Check that our mock is working
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        expect(timezone).toBe('Asia/Tokyo')
+      })
+
+      it('can mock UTC timezone', () => {
+        // Mock UTC timezone
+        global.mockTimezone('UTC')
+
+        // Check that our mock is working
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        expect(timezone).toBe('UTC')
+      })
+
+      it('restores original timezone after test', () => {
+        // Mock a different timezone
+        global.mockTimezone('Europe/London')
+        expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe('Europe/London')
+
+        // Restore
+        global.restoreTimezone()
+        expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe('America/New_York')
+      })
     })
   })
 })

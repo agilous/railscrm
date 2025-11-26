@@ -23,7 +23,7 @@ Dir.chdir(APP_ROOT) do
   terminal_message("Done.\n\n")
 
   terminal_message("Running JavaScript Tests...")
-  js_tests_passed = system("NODE_OPTIONS='--no-deprecation' npm test -- --silent --no-watchman --forceExit 2>/dev/null")
+  js_tests_passed = system("TZ=America/New_York NODE_OPTIONS='--no-deprecation' npm test -- --silent --no-watchman --forceExit 2>/dev/null")
   terminal_message("Done.\n\n")
 
   terminal_message("Linting Ruby Code...")

@@ -14,8 +14,8 @@
     "jest-environment-jsdom": "^29.7.0"
   },
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "TZ=America/New_York jest",
+    "test:watch": "TZ=America/New_York jest --watch",
     "lint": "eslint app/javascript/**/*.js"
   },
   "jest": {
@@ -25,6 +25,9 @@
     },
     "testMatch": [
       "**/spec/javascript/**/*.spec.js"
+    ],
+    "setupFiles": [
+      "<rootDir>/spec/javascript/support/timezone.js"
     ]
   }
 }
