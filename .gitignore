@@ -9,6 +9,7 @@
 
 # Claude
 .claude/settings.local.json
+/research/*
 
 # Ignore all environment files (except templates).
 /.env*
