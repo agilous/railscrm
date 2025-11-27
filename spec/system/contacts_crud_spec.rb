@@ -475,6 +475,27 @@ RSpec.describe 'Contacts CRUD', type: :system do
       end
     end
 
+    it 'opens note modal when clicking Add Note button', js: true do
+      visit contact_path(contact)
+
+      add_note_button = find('button[onclick="showNoteModal()"]')
+      expect(add_note_button).to have_content('Add Note')
+
+      add_note_button.click
+
+      expect(page).to have_css('#noteModal', visible: true)
+      expect(page).to have_content('Add Note')
+
+      within('#noteModal') do
+        fill_in 'note_content', with: 'Testing the button click'
+        expect(page).to have_field('note_content', with: 'Testing the button click')
+
+        click_button 'Cancel'
+      end
+
+      expect(page).to have_css('#noteModal', visible: false)
+    end
+
     it 'has clickable email and phone links' do
       visit contact_path(contact)
 

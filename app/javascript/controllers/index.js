@@ -15,3 +15,9 @@ application.register('activity-modal', ActivityModalController)
 
 import DatetimePickerController from './datetime_picker_controller'
 application.register('datetime-picker', DatetimePickerController)
+
+import CalendarLinksController from './calendar_links_controller'
+application.register('calendar-links', CalendarLinksController)
+
+import DropdownController from './dropdown_controller'
+application.register('dropdown', DropdownController)

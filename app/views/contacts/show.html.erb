@@ -88,7 +88,7 @@
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
           <div class="space-y-2">
-            <button data-action="click->note-modal#open" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
+            <button onclick="showNoteModal()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
               <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
               </svg>
@@ -172,7 +172,19 @@
                                 <% when 'note' %>
                                   <span class="font-medium">Note added:</span> <%= truncate(item[:item].content, length: 100) %>
                                 <% when 'activity' %>
-                                  <span class="font-medium"><%= item[:item].activity_type %>:</span> <%= item[:item].title %>
+                                  <span class="font-medium"><%= item[:item].activity_type %>:</span>
+                                  <% if item[:item].due_date.present? %>
+                                    <a href="#" class="text-blue-600 hover:text-blue-800"
+                                       data-controller="calendar-links"
+                                       data-calendar-links-title-value="<%= item[:item].activity_type %>: <%= item[:item].title %>"
+                                       data-calendar-links-description-value="<%= item[:item].description %>"
+                                       data-calendar-links-start-time-value="<%= item[:item].due_date&.iso8601 %>"
+                                       data-calendar-links-duration-value="<%= item[:item].duration || 60 %>">
+                                      <%= item[:item].title %>
+                                    </a>
+                                  <% else %>
+                                    <%= item[:item].title %>
+                                  <% end %>
                                   <% if item[:item].completed_at.present? %>
                                     <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span>
                                   <% elsif item[:item].due_date && item[:item].due_date < Date.current %>
@@ -229,36 +241,7 @@
             <% if @contact.activities.any? %>
               <div class="space-y-4">
                 <% @contact.activities.order(created_at: :desc).each do |activity| %>
-                  <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="flex justify-between items-start">
-                      <div>
-                        <p class="text-sm font-medium text-gray-900">
-                          <%= activity.activity_type %>: <%= activity.title %>
-                        </p>
-                        <% if activity.description.present? %>
-                          <p class="text-sm text-gray-600 mt-1"><%= activity.description %></p>
-                        <% end %>
-                        <% if activity.due_date.present? %>
-                          <p class="text-xs text-gray-500 mt-2">
-                            Due: <%= activity.due_date.strftime("%B %d, %Y at %I:%M %p") %>
-                          </p>
-                        <% end %>
-                      </div>
-                      <% if activity.completed_at.present? %>
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Done
-                        </span>
-                      <% elsif activity.due_date && activity.due_date < DateTime.current %>
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          Overdue
-                        </span>
-                      <% else %>
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          Scheduled
-                        </span>
-                      <% end %>
-                    </div>
-                  </div>
+                  <%= render 'activities/activity_card', activity: activity %>
                 <% end %>
               </div>
             <% else %>
@@ -345,6 +328,12 @@
     document.getElementById(tabName + '-tab').classList.add('active-tab');
   }
   
+  function showNoteModal() {
+    if (typeof window.openNoteModal === 'function') {
+      window.openNoteModal();
+    }
+  }
+
   function showScheduleActivityModal() {
     if (typeof window.openActivityModal === 'function') {
       window.openActivityModal();

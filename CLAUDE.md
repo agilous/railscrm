@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Rails 8 CRM application modernized for the latest Rails ecosystem. The application manages contacts, accounts, leads, opportunities, tasks, and multi-association notes with a focus on clean, maintainable code and comprehensive test coverage.
 
+## Common Issues
+
+1. Before starting the Rails server, check to see if there is a server instance already running.
+
 ## Development Commands
 
 ### Setup
