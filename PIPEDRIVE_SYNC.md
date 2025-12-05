@@ -1,6 +1,6 @@
 # Pipedrive Synchronization
 
-This Rails CRM application includes a Pipedrive synchronization feature to import data from your Pipedrive account.
+This Wendell CRM application includes a Pipedrive synchronization feature to import data from your Pipedrive account.
 
 ## Setup
 

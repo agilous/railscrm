@@ -34,10 +34,10 @@ export default class extends Controller {
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Rails CRM//Activity//EN',
+      'PRODID:-//Wendell CRM//Activity//EN',
       'METHOD:PUBLISH',
       'BEGIN:VEVENT',
-      `UID:${Date.now()}@railscrm.local`,
+      `UID:${Date.now()}@wendellcrm.local`,
       `DTSTAMP:${formatUTCDate(new Date())}`,
       `DTSTART:${formatLocalDate(startDate)}`,
       `DTEND:${formatLocalDate(endDate)}`,
