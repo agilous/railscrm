@@ -4,7 +4,7 @@ This document explains the work done to make the test environment configuration 
 
 ## Overview
 
-The Rails CRM application needed cross-platform compatibility for system tests that use Chrome WebDriver. The main challenge was handling different Chrome executable locations and ChromeDriver versions across macOS and Linux systems.
+The Wendell CRM application needed cross-platform compatibility for system tests that use Chrome WebDriver. The main challenge was handling different Chrome executable locations and ChromeDriver versions across macOS and Linux systems.
 
 ## Problem
 

@@ -1,4 +1,4 @@
-# Rails CRM - Rails 8 Modernization
+# Wendell CRM
 
 This is a **Rails 8 modernization** of the original [Rails CRM](https://github.com/brobertsaz/railscrm) opensource Customer Relations Management application. While the original project was built with Rails 3.2.11 and MongoDB, this version has been completely rewritten for Rails 8 with modern best practices and updated technologies.
 
@@ -16,12 +16,6 @@ This modernized version includes significant upgrades:
 - **CI/CD Pipeline** - GitHub Actions for automated testing
 - **Enhanced CRUD Operations** - Modern styling and improved user experience
 
-## About Rails CRM
-
-Rails CRM is an opensource Customer Relations Management application intended to be similar to paid CRMs but as a bare bones solution that can be cloned and modified however you please.
-
-This version maintains the core CRM functionality while leveraging modern Rails conventions and contemporary web development practices.
-
 ## Technology Stack
 
 - **Ruby** 3.2.1
@@ -36,11 +30,11 @@ This version maintains the core CRM functionality while leveraging modern Rails 
 
 ## Prerequisites
 
-Before installing Rails CRM, ensure you have the following installed:
+Before installing Wendell CRM, ensure you have the following installed:
 
 ### PostgreSQL
 
-Rails CRM uses PostgreSQL for its database. To install PostgreSQL:
+Wendell CRM uses PostgreSQL for its database. To install PostgreSQL:
 
 **macOS (using Homebrew):**
 ```bash
@@ -84,8 +78,8 @@ asdf install  # Installs all versions from .tool-versions
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/agilous/railscrm.git
-   cd railscrm
+   git clone https://github.com/launchscout/wendellcrm.git
+   cd wendellcrm
    ```
 
 2. **Run the setup script**
@@ -132,7 +126,7 @@ The initial setup requires creating Users who can be assigned leads, contacts, o
 
 ## Web-to-Lead
 
-Rails CRM includes a web-to-lead function that generates embeddable forms for your website. When visitors submit these forms, new leads are automatically created in the CRM.
+Wendell CRM includes a web-to-lead function that generates embeddable forms for your website. When visitors submit these forms, new leads are automatically created in the CRM.
 
 To use Web-to-Lead:
 
@@ -146,7 +140,7 @@ To use Web-to-Lead:
 
 ## Migrating from Pipedrive (Optional)
 
-If you're currently using Pipedrive and want to pilot Rails CRM, a one-way import tool is available to help you migrate your data. This allows you to evaluate Rails CRM with your existing data before deciding whether to make the switch.
+If you're currently using Pipedrive and want to pilot Wendell CRM, a one-way import tool is available to help you migrate your data. This allows you to evaluate Wendell CRM with your existing data before deciding whether to make the switch.
 
 ```bash
 # Import all data from Pipedrive
@@ -218,7 +212,7 @@ rails tailwindcss:build
 
 ## Development Roadmap
 
-Rails CRM has a comprehensive development roadmap that outlines planned features and implementation priorities. See [ROADMAP.md](ROADMAP.md) for:
+Wendell CRM has a comprehensive development roadmap that outlines planned features and implementation priorities. See [ROADMAP.md](ROADMAP.md) for:
 
 - **Immediate Priorities** - Schedule Activity functionality and Web-to-Lead form completion
 - **Implementation Phases** - Detailed sprint planning and effort estimates
@@ -269,7 +263,7 @@ This project is based on the original Rails CRM by Bob Roberts and has been subs
 Copyright © 2012 Bob Roberts <bob@rebel-outpost.com>
 
 **Rails 8 Modernization (derivative work):**
-Copyright © 2024-2025 [Your Name/Organization]
+Copyright © 2025 Launch Scout, LLC
 
 Both the original work and this derivative work are distributed under the MIT License.
 

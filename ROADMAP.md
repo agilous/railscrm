@@ -1,6 +1,6 @@
-# Rails CRM Development Roadmap
+# Wendell CRM Development Roadmap
 
-This document outlines the future development roadmap for the Rails CRM application, including partially implemented features, planned enhancements, and integration opportunities. The roadmap prioritizes features that will provide the most value to users while building toward a complete standalone CRM solution. Note: Pipedrive integration is designed for one-way migration to ease the transition from Pipedrive to Rails CRM, not for ongoing synchronization.
+This document outlines the future development roadmap for the Wendell CRM application, including partially implemented features, planned enhancements, and integration opportunities. The roadmap prioritizes features that will provide the most value to users while building toward a complete standalone CRM solution. Note: Pipedrive integration is designed for one-way migration to ease the transition from Pipedrive to Wendell CRM, not for ongoing synchronization.
 
 ## Current Status & Immediate Priorities
 
@@ -31,7 +31,7 @@ This document outlines the future development roadmap for the Rails CRM applicat
 **Implementation Focus:**
 - Create standalone activity management system
 - Ensure data can be exported if needed
-- Focus on user experience within Rails CRM
+- Focus on user experience within Wendell CRM
 - No external API dependencies for core functionality
 
 **Database Considerations:**
@@ -262,6 +262,6 @@ These specs provide golden path testing for:
 
 ## Conclusion
 
-The Rails CRM application has a solid foundation with comprehensive system specs. The two main stubbed features (Schedule Activity and Lead Conversion) are well-documented and ready for implementation. The existing codebase follows Rails conventions and includes proper model relationships, making future enhancements straightforward to implement.
+The Wendell CRM application has a solid foundation with comprehensive system specs. The two main stubbed features (Schedule Activity and Lead Conversion) are well-documented and ready for implementation. The existing codebase follows Rails conventions and includes proper model relationships, making future enhancements straightforward to implement.
 
 The comprehensive system specs ensure that any future implementations maintain the quality and reliability of the existing functionality while providing clear guidance on expected behavior for new features.
