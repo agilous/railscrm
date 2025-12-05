@@ -1,12 +1,12 @@
 require_relative "../pipedrive_sync"
 
 namespace :pipedrive do
-  desc "One-time production migration from Pipedrive to RailsCRM"
+  desc "One-time production migration from Pipedrive to WendellCRM"
   task migrate: :environment do
     start_time = Time.current
 
     puts "\n" + "=" * 80
-    puts " PIPEDRIVE → RAILSCRM ONE-TIME MIGRATION"
+    puts " PIPEDRIVE → WENDELLCRM ONE-TIME MIGRATION"
     puts "=" * 80
     puts " Started: #{start_time}"
     puts "=" * 80
@@ -48,7 +48,7 @@ namespace :pipedrive do
       puts "  #{type.ljust(15)}: #{count.to_s.rjust(6)}"
     end
 
-    puts "\n=== Rails CRM Data ==="
+    puts "\n=== WendellCRM Data ==="
     puts "  Users          : #{User.count.to_s.rjust(6)}"
     puts "  Accounts       : #{Account.count.to_s.rjust(6)}"
     puts "  Contacts       : #{Contact.count.to_s.rjust(6)}"
